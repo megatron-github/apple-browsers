@@ -42,6 +42,9 @@ protocol Promo: AnyObject {
     /// Default: empty (no coexistence exceptions).
     var coexistingPromoIDs: Set<String> { get }
 
+    /// Current eligibility state. Use isEligiblePublisher to observe changes.
+    var isEligible: Bool { get }
+
     /// Publisher indicating whether this promo is currently eligible.
     /// Must emit a current value immediately on subscription (use CurrentValueSubject).
     var isEligiblePublisher: AnyPublisher<Bool, Never> { get }
