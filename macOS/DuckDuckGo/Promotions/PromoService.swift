@@ -27,6 +27,9 @@ struct ActiveShowSession {
     /// First-write-wins flag. Once true, ignore further results from show(), timeout, or eligibility.
     var isResultRecorded = false
 
+    /// Task that awaits promo.show() and records the result. Cancelled when session is cleaned up.
+    var showTask: Task<Void, Never>?
+
     /// Task that sleeps for promoType.timeoutInterval. On fire, records timeoutResult if !isResultRecorded.
     var timeoutTask: Task<Void, Never>?
 
@@ -105,6 +108,32 @@ final class PromoService {
                 }
             }
             .store(in: &cancellables)
+
+        visiblePromoIds
+            .dropFirst()
+            .sink { [weak self] ids in
+                self?.historyStore.saveVisiblePromoIds(ids)
+            }
+            .store(in: &cancellables)
+
+        restoreVisiblePromos()
+    }
+
+    // MARK: - Restore on restart
+
+    private func restoreVisiblePromos() {
+        guard !isExternalLaunch else { return }
+        let persistedIds = historyStore.loadVisiblePromoIds()
+        guard !persistedIds.isEmpty else { return }
+
+        for promoId in persistedIds {
+            guard let promo = promos.first(where: { $0.id == promoId }) else { continue }
+            let record = historyStore.record(for: promoId)
+            guard !record.isPermanentlyDismissed, record.isEligible else { continue }
+            guard promo.isEligible else { continue }
+
+            performShow(promo: promo, record: record, isRestore: true)
+        }
     }
 
     // MARK: - Trigger handling
@@ -121,7 +150,7 @@ final class PromoService {
 
             guard promo.isEligible else { continue }
 
-            performShow(promo: promo, record: record)
+            performShow(promo: promo, record: record, isRestore: false)
             return
         }
     }
@@ -168,13 +197,14 @@ final class PromoService {
 
     // MARK: - Perform show
 
-    private func performShow(promo: any Promo, record: PromoHistoryRecord) {
+    private func performShow(promo: any Promo, record: PromoHistoryRecord, isRestore: Bool = false) {
         let promoId = promo.id
-        var updatedRecord = record
-        updatedRecord.lastPresented = Date()
-        historyStore.save(updatedRecord)
-
-        lastInitiatedShow[promo.initiated] = Date()
+        var recordToUse = record
+        if !isRestore {
+            recordToUse.lastPresented = Date()
+            historyStore.save(recordToUse)
+            lastInitiatedShow[promo.initiated] = Date()
+        }
 
         let eligibilityCancellable = promo.isEligiblePublisher
             .dropFirst()
@@ -195,21 +225,22 @@ final class PromoService {
             }
         }
 
-        let session = ActiveShowSession(
+        let showTask = Task { [weak self] in
+            let result = await promo.show(history: recordToUse)
+            await MainActor.run {
+                self?.handleShowResult(promoId: promoId, result: result)
+            }
+        }
+
+        var session = ActiveShowSession(
             promo: promo,
             isResultRecorded: false,
+            showTask: showTask,
             timeoutTask: timeoutTask,
             eligibilityCancellable: eligibilityCancellable
         )
         activeSessions[promoId] = session
         visiblePromoIds.send(Set(activeSessions.keys))
-
-        Task {
-            let result = await promo.show(history: updatedRecord)
-            await MainActor.run {
-                handleShowResult(promoId: promoId, result: result)
-            }
-        }
     }
 
     // MARK: - Result handling
@@ -234,6 +265,8 @@ final class PromoService {
         session.isResultRecorded = true
         activeSessions[promoId] = session
 
+        session.showTask?.cancel()
+        session.showTask = nil
         session.timeoutTask?.cancel()
         session.timeoutTask = nil
         session.eligibilityCancellable?.cancel()

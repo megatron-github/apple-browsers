@@ -25,6 +25,7 @@ import Persistence
 final class PromoHistoryStore: PromoHistoryStoring {
 
     private static let storageKey = "com.duckduckgo.promo.history"
+    private static let visibleIdsStorageKey = "com.duckduckgo.promo.visibleIds"
 
     private static let encoder: JSONEncoder = {
         let encoder = JSONEncoder()
@@ -74,6 +75,26 @@ final class PromoHistoryStore: PromoHistoryStoring {
         recordsSubject
             .map { Array($0.values) }
             .eraseToAnyPublisher()
+    }
+
+    func saveVisiblePromoIds(_ ids: Set<String>) {
+        do {
+            let data = try Self.encoder.encode(Array(ids))
+            try store.set(data, forKey: Self.visibleIdsStorageKey)
+        } catch {
+            Logger.general.error("PromoHistoryStore failed to persist visible promo IDs: \(error.localizedDescription)")
+        }
+    }
+
+    func loadVisiblePromoIds() -> Set<String> {
+        do {
+            guard let data = try store.object(forKey: Self.visibleIdsStorageKey) as? Data else { return [] }
+            let array = try Self.decoder.decode([String].self, from: data)
+            return Set(array)
+        } catch {
+            Logger.general.error("PromoHistoryStore failed to load visible promo IDs: \(error.localizedDescription)")
+            return []
+        }
     }
 
     private func persist() {

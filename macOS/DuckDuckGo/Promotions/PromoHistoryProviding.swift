@@ -31,4 +31,10 @@ protocol PromoHistoryStoring: PromoHistoryProviding {
     func record(for promoId: String) -> PromoHistoryRecord
     func save(_ record: PromoHistoryRecord)
     func allRecords() -> [PromoHistoryRecord]
+
+    /// Persists visible promo IDs for restore-on-restart.
+    func saveVisiblePromoIds(_ ids: Set<String>)
+
+    /// Loads persisted visible promo IDs. Returns empty set on failure.
+    func loadVisiblePromoIds() -> Set<String>
 }
