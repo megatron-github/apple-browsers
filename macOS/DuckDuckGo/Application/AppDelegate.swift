@@ -2006,31 +2006,15 @@ extension AppDelegate {
     private func makePromoService() -> PromoService {
         _ = newTabPageCoordinator
         let isPromoServiceEnabled: () -> Bool = { self.defaultBrowserAndDockPromptService.isPromoServiceEnabled() }
-        let service = defaultBrowserAndDockPromptService
 
         var promos: [any Promo] = []
         if let provider = nextStepsCardsProvider {
             promos.append(NextStepsCardsPromo(provider: provider, isPromoServiceEnabled: isPromoServiceEnabled))
         }
         promos.append(RemoteMessagePromo(provider: activeRemoteMessageModel, isPromoServiceEnabled: isPromoServiceEnabled))
-        promos.append(DefaultBrowserInactiveModalPromo(
-            coordinator: service.coordinator,
-            presenter: service.presenter,
-            uiProvidersProvider: service.uiProvidersProvider,
-            isPromoServiceEnabled: isPromoServiceEnabled
-        ))
-        promos.append(DefaultBrowserBannerPromo(
-            coordinator: service.coordinator,
-            presenter: service.presenter,
-            uiProvidersProvider: service.uiProvidersProvider,
-            isPromoServiceEnabled: isPromoServiceEnabled
-        ))
-        promos.append(DefaultBrowserPopoverPromo(
-            coordinator: service.coordinator,
-            presenter: service.presenter,
-            uiProvidersProvider: service.uiProvidersProvider,
-            isPromoServiceEnabled: isPromoServiceEnabled
-        ))
+        promos.append(DefaultBrowserInactiveModalPromo(service: defaultBrowserAndDockPromptService, isPromoServiceEnabled: isPromoServiceEnabled))
+        promos.append(DefaultBrowserBannerPromo(service: defaultBrowserAndDockPromptService, isPromoServiceEnabled: isPromoServiceEnabled))
+        promos.append(DefaultBrowserPopoverPromo(service: defaultBrowserAndDockPromptService, isPromoServiceEnabled: isPromoServiceEnabled))
 
         let triggerPublisher = Publishers.Merge(
             NotificationCenter.default.publisher(for: .newTabPageWebViewDidAppear)

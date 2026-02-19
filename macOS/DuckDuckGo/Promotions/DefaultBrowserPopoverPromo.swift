@@ -57,6 +57,14 @@ final class DefaultBrowserPopoverPromo: Promo {
         self.isPromoServiceEnabled = isPromoServiceEnabled
     }
 
+    convenience init(service: DefaultBrowserAndDockPromptService,
+                     isPromoServiceEnabled: @escaping () -> Bool = { false }) {
+        self.init(coordinator: service.coordinator,
+                  presenter: service.presenter,
+                  uiProvidersProvider: service.uiProvidersProvider,
+                  isPromoServiceEnabled: isPromoServiceEnabled)
+    }
+
     func show(history: PromoHistoryRecord) async -> PromoResult {
         guard coordinator.promptTypeForEligibilityCheck() == .active(.popover) else {
             return .none
