@@ -20,8 +20,8 @@ import Foundation
 
 struct PromoHistoryRecord: Codable, Equatable {
     let id: String
-    var timesPresented: Int
-    var lastPresented: Date?
+    var timesDismissed: Int
+    var lastDismissed: Date?
     var nextEligibleDate: Date?
 
     var isPermanentlyDismissed: Bool {
@@ -35,8 +35,8 @@ struct PromoHistoryRecord: Codable, Equatable {
 
     init(id: String) {
         self.id = id
-        self.timesPresented = 0
-        self.lastPresented = nil
+        self.timesDismissed = 0
+        self.lastDismissed = nil
         self.nextEligibleDate = nil
     }
 }

@@ -50,7 +50,7 @@ protocol Promo: AnyObject {
     var isEligiblePublisher: AnyPublisher<Bool, Never> { get }
 
     /// Shows the promo. Returns when user interacts, promo retracts, or hide() is called.
-    /// Receives the promo's own history for result decisions (e.g. varying cooldown by timesPresented).
+    /// Receives the promo's own history for result decisions (e.g. varying cooldown by timesDismissed).
     @MainActor
     func show(history: PromoHistoryRecord) async -> PromoResult
 

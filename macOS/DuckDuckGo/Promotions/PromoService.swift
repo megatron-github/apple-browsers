@@ -60,13 +60,13 @@ final class PromoService {
         }
     }
 
-    /// Reverse a dismissal. clearHistory resets timesPresented/lastPresented as well.
+    /// Reverse a dismissal. clearHistory resets timesDismissed/lastDismissed as well.
     func undismiss(promoId: String, clearHistory: Bool) {
         var record = historyStore.record(for: promoId)
         record.nextEligibleDate = nil
         if clearHistory {
-            record.timesPresented = 0
-            record.lastPresented = nil
+            record.timesDismissed = 0
+            record.lastDismissed = nil
         }
         historyStore.save(record)
     }
@@ -80,7 +80,6 @@ final class PromoService {
 
     private var activeSessions: [String: ActiveShowSession] = [:]
     private let visiblePromoIds: CurrentValueSubject<Set<String>, Never>
-    private var lastInitiatedShow: [PromoInitiated: Date] = [:]
     private var cancellables = Set<AnyCancellable>()
 
     private let evaluationQueue = DispatchQueue(label: "com.duckduckgo.promoService.evaluation")
@@ -181,10 +180,14 @@ final class PromoService {
         }
 
         if severity >= .medium {
-            if let last = lastInitiatedShow[promo.initiated] {
-                let hours = promo.initiated.cooldownHours
-                let interval = TimeInterval(hours * 3600)
-                if Date().timeIntervalSince(last) < interval { return false }
+            let cooldownHours = promo.initiated.cooldownHours
+            let cooldownInterval = TimeInterval(cooldownHours * 3600)
+            let lastDismissedForType = promos
+                .filter { $0.initiated == promo.initiated }
+                .compactMap { historyStore.record(for: $0.id).lastDismissed }
+                .max()
+            if let last = lastDismissedForType, Date().timeIntervalSince(last) < cooldownInterval {
+                return false
             }
 
             if context == .newTabPage && !visibleIds.isDisjoint(with: nextStepsPromoIds) {
@@ -199,12 +202,7 @@ final class PromoService {
 
     private func performShow(promo: any Promo, record: PromoHistoryRecord, isRestore: Bool = false) {
         let promoId = promo.id
-        var recordToUse = record
-        if !isRestore {
-            recordToUse.lastPresented = Date()
-            historyStore.save(recordToUse)
-            lastInitiatedShow[promo.initiated] = Date()
-        }
+        let recordToUse = record
 
         let eligibilityCancellable = promo.isEligiblePublisher
             .dropFirst()
@@ -277,12 +275,14 @@ final class PromoService {
         switch result {
         case .actioned, .ignored(cooldown: nil):
             var record = historyStore.record(for: promoId)
-            record.timesPresented += 1
+            record.timesDismissed += 1
+            record.lastDismissed = Date()
             record.nextEligibleDate = .distantFuture
             historyStore.save(record)
         case .ignored(cooldown: let interval?):
             var record = historyStore.record(for: promoId)
-            record.timesPresented += 1
+            record.timesDismissed += 1
+            record.lastDismissed = Date()
             record.nextEligibleDate = Date().addingTimeInterval(interval)
             historyStore.save(record)
         case .none:
@@ -299,11 +299,13 @@ final class PromoService {
         var record = historyStore.record(for: promoId)
         switch result {
         case .actioned, .ignored(cooldown: nil):
-            record.timesPresented += 1
+            record.timesDismissed += 1
+            record.lastDismissed = Date()
             record.nextEligibleDate = .distantFuture
             historyStore.save(record)
         case .ignored(cooldown: let interval?):
-            record.timesPresented += 1
+            record.timesDismissed += 1
+            record.lastDismissed = Date()
             record.nextEligibleDate = Date().addingTimeInterval(interval)
             historyStore.save(record)
         case .none:
