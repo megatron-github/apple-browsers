@@ -108,6 +108,10 @@ private final class DefaultBrowserAndDockPromptPresentingMock: DefaultBrowserAnd
         bannerSubject.eraseToAnyPublisher()
     }
 
+    var promptDismissedPublisher: AnyPublisher<Void, Never> {
+        bannerSubject.eraseToAnyPublisher()
+    }
+
     func tryToShowPrompt(popoverAnchorProvider: @escaping () -> NSView?,
                          bannerViewHandler: @escaping (BannerMessageViewController) -> Void,
                          inactiveUserModalWindowProvider: @escaping () -> NSWindow?) {

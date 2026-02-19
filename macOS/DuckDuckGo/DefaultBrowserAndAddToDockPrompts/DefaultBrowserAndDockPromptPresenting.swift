@@ -28,6 +28,10 @@ protocol DefaultBrowserAndDockPromptPresenting {
     /// This is used, for example, to close the banner in all windows when it gets closed in one.
     var bannerDismissedPublisher: AnyPublisher<Void, Never> { get }
 
+    /// Publisher that emits when any prompt (popover, banner, or inactive modal) is dismissed.
+    /// Used by PromoService-backed Default Browser promos to resume their show() continuation.
+    var promptDismissedPublisher: AnyPublisher<Void, Never> { get }
+
     /// Attempts to show the SAD/ATT prompt to the user, either as a popover or a banner, based on the user's eligibility for the experiment.
     ///
     /// - Parameter popoverAnchorProvider: A closure that provides the anchor view for the popover. If the popover is eligible to be shown, it will be displayed relative to this view.
@@ -61,6 +65,7 @@ final class DefaultBrowserAndDockPromptPresenter: DefaultBrowserAndDockPromptPre
     private let coordinator: DefaultBrowserAndDockPrompt
     private let statusUpdateNotifier: DefaultBrowserAndDockPromptStatusNotifying
     private let bannerDismissedSubject = PassthroughSubject<Void, Never>()
+    private let promptDismissedSubject = PassthroughSubject<Void, Never>()
     private let uiProvider: DefaultBrowserAndDockPromptUIProviding
 
     private var popover: NSPopover?
@@ -80,6 +85,10 @@ final class DefaultBrowserAndDockPromptPresenter: DefaultBrowserAndDockPromptPre
 
     var bannerDismissedPublisher: AnyPublisher<Void, Never> {
         bannerDismissedSubject.eraseToAnyPublisher()
+    }
+
+    var promptDismissedPublisher: AnyPublisher<Void, Never> {
+        promptDismissedSubject.eraseToAnyPublisher()
     }
 
     /// **PROMPT ORCHESTRATOR**
@@ -247,6 +256,7 @@ final class DefaultBrowserAndDockPromptPresenter: DefaultBrowserAndDockPromptPre
                 // Triggers system prompt, marks popover as shown (won't show again)
                 self.coordinator.confirmAction(for: .active(.popover))
                 self.popover?.close()
+                self.promptDismissedSubject.send()
             },
             secondaryButtonText: content.secondaryButtonTitle,
             // Secondary button: "Not Now" (dismiss, banner will follow later)
@@ -255,6 +265,7 @@ final class DefaultBrowserAndDockPromptPresenter: DefaultBrowserAndDockPromptPre
                 // Marks popover as shown, banner sequence begins
                 self.coordinator.dismissAction(.userInput(prompt: .active(.popover), shouldHidePermanently: false))
                 self.popover?.close()
+                self.promptDismissedSubject.send()
             })
 
         let contentView = DefaultBrowserAndDockPromptPopoverView(viewModel: viewModel)
@@ -275,6 +286,7 @@ final class DefaultBrowserAndDockPromptPresenter: DefaultBrowserAndDockPromptPre
                 coordinator.confirmAction(for: .inactive)
                 Task { @MainActor in
                     await self.dismissInactiveUserModal()
+                    self.promptDismissedSubject.send()
                 }
             },
             dismissButtonAction: {[weak self] in
@@ -283,6 +295,7 @@ final class DefaultBrowserAndDockPromptPresenter: DefaultBrowserAndDockPromptPre
                 coordinator.dismissAction(.userInput(prompt: .inactive, shouldHidePermanently: false))
                 Task { @MainActor in
                     await self.dismissInactiveUserModal()
+                    self.promptDismissedSubject.send()
                 }
             })
         let contentView = DefaultBrowserAndDockPromptInactiveUserView(viewModel: viewModel, browsersComparisonChart: uiProvider.makeBrowserComparisonChart())
@@ -293,6 +306,7 @@ final class DefaultBrowserAndDockPromptPresenter: DefaultBrowserAndDockPromptPre
     private func dismissBanner() {
         self.clearStatusUpdateData()
         self.bannerDismissedSubject.send()
+        self.promptDismissedSubject.send()
     }
 
     private func dismissInactiveUserModal() async {
@@ -305,6 +319,7 @@ final class DefaultBrowserAndDockPromptPresenter: DefaultBrowserAndDockPromptPre
         bannerDismissedSubject.send()
         Task { @MainActor in
             await dismissInactiveUserModal()
+            promptDismissedSubject.send()
             onCompletion?()
         }
     }

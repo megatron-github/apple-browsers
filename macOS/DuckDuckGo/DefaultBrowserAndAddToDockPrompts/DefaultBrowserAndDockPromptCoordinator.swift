@@ -218,6 +218,30 @@ final class DefaultBrowserAndDockPromptCoordinator: DefaultBrowserAndDockPrompt 
         }
     }
 
+    // MARK: - PromoService eligibility publishers
+
+    /// Eligibility for each prompt variant. Updated by `evaluateEligibility()`.
+    /// Used by Default Browser promos for `isEligiblePublisher`.
+    let popoverEligibility = CurrentValueSubject<Bool, Never>(false)
+    let bannerEligibility = CurrentValueSubject<Bool, Never>(false)
+    let inactiveModalEligibility = CurrentValueSubject<Bool, Never>(false)
+
+    /// Side-effect-free eligibility check. Use for PromoService; does not mark prompts as shown or fire pixels.
+    func promptTypeForEligibilityCheck() -> DefaultBrowserAndDockPromptPresentationType? {
+        guard isOnboardingCompleted() else { return nil }
+        guard evaluatePromptEligibility != nil else { return nil }
+        return promptTypeDecider.promptType()
+    }
+
+    /// Updates eligibility publishers. Call from `getPromptType()` and `dismissAction()`.
+    /// - Parameter promptType: If provided, uses this value; otherwise recomputes via `promptTypeForEligibilityCheck()`.
+    func evaluateEligibility(promptType: DefaultBrowserAndDockPromptPresentationType? = nil) {
+        let type = promptType ?? promptTypeForEligibilityCheck()
+        popoverEligibility.send(type == .active(.popover))
+        bannerEligibility.send(type == .active(.banner))
+        inactiveModalEligibility.send(type == .inactive)
+    }
+
     /// **MAIN DECISION POINT - Determines WHICH prompt to show and WHEN**
     ///
     /// Called by `DefaultBrowserAndDockPromptPresenter.tryToShowPrompt()` every time a window becomes key.
@@ -252,6 +276,8 @@ final class DefaultBrowserAndDockPromptCoordinator: DefaultBrowserAndDockPrompt 
         guard let evaluatePromptEligibility else { return nil }
 
         let prompt = promptTypeDecider.promptType()
+
+        evaluateEligibility(promptType: prompt)
 
         // For the popover and inactive prompts, we mark them as shown when they appear on screen as we don't want to show in every window.
         switch prompt {
@@ -349,6 +375,7 @@ final class DefaultBrowserAndDockPromptCoordinator: DefaultBrowserAndDockPrompt 
             // System detected status change (default browser/dock) outside the prompt
             handleSystemUpdateDismissAction(for: prompt)
         }
+        evaluateEligibility()
     }
 
 }

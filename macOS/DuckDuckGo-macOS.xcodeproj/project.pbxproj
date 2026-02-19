@@ -3803,6 +3803,10 @@
 		CC0DD91A2E5DFA5800277E46 /* SessionRestorePromptPopover.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC0DD9182E5DFA4D00277E46 /* SessionRestorePromptPopover.swift */; };
 		CC0DD91C2E5EF7CE00277E46 /* SessionRestorePromptCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC0DD91B2E5EF7C100277E46 /* SessionRestorePromptCoordinator.swift */; };
 		CC0DD91D2E5EF7CE00277E46 /* SessionRestorePromptCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC0DD91B2E5EF7C100277E46 /* SessionRestorePromptCoordinator.swift */; };
+		CC199E1C2F473673009646F9 /* DefaultBrowserInactiveModalPromo.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC951B032EB5284D0047E253 /* DefaultBrowserInactiveModalPromo.swift */; };
+		CC199E1D2F473678009646F9 /* DefaultBrowserPopoverPromo.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC951B022EB5284C0047E252 /* DefaultBrowserPopoverPromo.swift */; };
+		CC199E1E2F47367D009646F9 /* DefaultBrowserBannerPromo.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC951B012EB5284B0047E251 /* DefaultBrowserBannerPromo.swift */; };
+		CC199E1F2F4736B4009646F9 /* DefaultBrowserPromptUIProvidersProviding.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC951B002EB5284A0047E250 /* DefaultBrowserPromptUIProvidersProviding.swift */; };
 		CC19E9ED2E82CFC20043F931 /* AIChatHistoryCleaner.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC19E9EC2E82CFBB0043F931 /* AIChatHistoryCleaner.swift */; };
 		CC19E9EE2E82CFC20043F931 /* AIChatHistoryCleaner.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC19E9EC2E82CFBB0043F931 /* AIChatHistoryCleaner.swift */; };
 		CC19E9F02E82E36A0043F931 /* AIChatHistoryCleanerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC19E9EF2E82E36A0043F931 /* AIChatHistoryCleanerTests.swift */; };
@@ -3876,6 +3880,10 @@
 		CC951ADC2EB524930047E245 /* DefaultBrowserAndDockPromptUserActivityManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC951ADA2EB524930047E245 /* DefaultBrowserAndDockPromptUserActivityManagerTests.swift */; };
 		CC951AEB2EB528490047E245 /* DefaultBrowserAndDockPromptService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC951AEA2EB528410047E245 /* DefaultBrowserAndDockPromptService.swift */; };
 		CC951AEC2EB528490047E245 /* DefaultBrowserAndDockPromptService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC951AEA2EB528410047E245 /* DefaultBrowserAndDockPromptService.swift */; };
+		CC951B042EB5284A0047E254 /* DefaultBrowserPromptUIProvidersProviding.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC951B002EB5284A0047E250 /* DefaultBrowserPromptUIProvidersProviding.swift */; };
+		CC951B052EB5284B0047E255 /* DefaultBrowserBannerPromo.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC951B012EB5284B0047E251 /* DefaultBrowserBannerPromo.swift */; };
+		CC951B062EB5284C0047E256 /* DefaultBrowserPopoverPromo.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC951B022EB5284C0047E252 /* DefaultBrowserPopoverPromo.swift */; };
+		CC951B072EB5284D0047E257 /* DefaultBrowserInactiveModalPromo.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC951B032EB5284D0047E253 /* DefaultBrowserInactiveModalPromo.swift */; };
 		CC9B678C2E607AD9003353C3 /* SessionRestorePromptPixel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC9B678B2E607AD1003353C3 /* SessionRestorePromptPixel.swift */; };
 		CC9B678D2E607AD9003353C3 /* SessionRestorePromptPixel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC9B678B2E607AD1003353C3 /* SessionRestorePromptPixel.swift */; };
 		CCA0EB212EBBCD56006944CF /* DefaultBrowserAndDockPromptInactiveUserView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCA0EB202EBBCD56006944CF /* DefaultBrowserAndDockPromptInactiveUserView.swift */; };
@@ -6412,6 +6420,10 @@
 		CC951AD72EB5241B0047E245 /* MockDefaultBrowserAndDockPromptUserActivityStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockDefaultBrowserAndDockPromptUserActivityStore.swift; sourceTree = "<group>"; };
 		CC951ADA2EB524930047E245 /* DefaultBrowserAndDockPromptUserActivityManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefaultBrowserAndDockPromptUserActivityManagerTests.swift; sourceTree = "<group>"; };
 		CC951AEA2EB528410047E245 /* DefaultBrowserAndDockPromptService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefaultBrowserAndDockPromptService.swift; sourceTree = "<group>"; };
+		CC951B002EB5284A0047E250 /* DefaultBrowserPromptUIProvidersProviding.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefaultBrowserPromptUIProvidersProviding.swift; sourceTree = "<group>"; };
+		CC951B012EB5284B0047E251 /* DefaultBrowserBannerPromo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefaultBrowserBannerPromo.swift; sourceTree = "<group>"; };
+		CC951B022EB5284C0047E252 /* DefaultBrowserPopoverPromo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefaultBrowserPopoverPromo.swift; sourceTree = "<group>"; };
+		CC951B032EB5284D0047E253 /* DefaultBrowserInactiveModalPromo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefaultBrowserInactiveModalPromo.swift; sourceTree = "<group>"; };
 		CC9B678B2E607AD1003353C3 /* SessionRestorePromptPixel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionRestorePromptPixel.swift; sourceTree = "<group>"; };
 		CCA0EB202EBBCD56006944CF /* DefaultBrowserAndDockPromptInactiveUserView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefaultBrowserAndDockPromptInactiveUserView.swift; sourceTree = "<group>"; };
 		CCAED3582EB8E0BE00C7368E /* MockDefaultBrowserAndDockPromptUserActivityProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockDefaultBrowserAndDockPromptUserActivityProvider.swift; sourceTree = "<group>"; };
@@ -10056,6 +10068,9 @@
 				A1B2C3D42E5F600700000007 /* PromoService.swift */,
 				A1B2C3D42E5F600800000008 /* NextStepsCardsPromo.swift */,
 				A1B2C3D42E5F600900000009 /* RemoteMessagePromo.swift */,
+				CC951B012EB5284B0047E251 /* DefaultBrowserBannerPromo.swift */,
+				CC951B022EB5284C0047E252 /* DefaultBrowserPopoverPromo.swift */,
+				CC951B032EB5284D0047E253 /* DefaultBrowserInactiveModalPromo.swift */,
 			);
 			path = Promotions;
 			sourceTree = "<group>";
@@ -11981,6 +11996,7 @@
 				37E7948C2EB9E955007BF23C /* UserActivity */,
 				9FCB94662DE05A3600BC662B /* SharedInterfaces */,
 				CC951AEA2EB528410047E245 /* DefaultBrowserAndDockPromptService.swift */,
+				CC951B002EB5284A0047E250 /* DefaultBrowserPromptUIProvidersProviding.swift */,
 				9F5D4EC42DED3F9D00B16D98 /* DefaultBrowserAndDockPromptPixelEvent.swift */,
 				9FFBEE622DDD7A040058B11A /* DefaultBrowserAndDockPromptDebugEventMapper.swift */,
 				9F08B30F2DE5A54A00C68C0E /* DefaultBrowserAndDockPromptDebugMenu.swift */,
@@ -14715,6 +14731,10 @@
 				7B0C7F0D2EDF132200A338FD /* WebNotificationsTabExtension.swift in Sources */,
 				37E477902EF006E6006369D6 /* MemoryUsageMonitor.swift in Sources */,
 				CC951AEB2EB528490047E245 /* DefaultBrowserAndDockPromptService.swift in Sources */,
+				CC951B042EB5284A0047E254 /* DefaultBrowserPromptUIProvidersProviding.swift in Sources */,
+				CC951B052EB5284B0047E255 /* DefaultBrowserBannerPromo.swift in Sources */,
+				CC951B062EB5284C0047E256 /* DefaultBrowserPopoverPromo.swift in Sources */,
+				CC951B072EB5284D0047E257 /* DefaultBrowserInactiveModalPromo.swift in Sources */,
 				A1B2C3D42E5F601100000001 /* PromoTypes.swift in Sources */,
 				A1B2C3D42E5F601200000002 /* PromoHistoryRecord.swift in Sources */,
 				A1B2C3D42E5F601300000003 /* Promo.swift in Sources */,
@@ -16473,6 +16493,7 @@
 				C1935A1B2C88F9ED001AD72D /* SyncPromoViewModel.swift in Sources */,
 				37A6A8F12AFCC988008580A3 /* FaviconsFetcherOnboarding.swift in Sources */,
 				7BEC20452B0F505F00243D3E /* AddBookmarkFolderPopoverView.swift in Sources */,
+				CC199E1C2F473673009646F9 /* DefaultBrowserInactiveModalPromo.swift in Sources */,
 				7B0C7F0E2EDF132200A338FD /* WebNotificationsTabExtension.swift in Sources */,
 				B6C0BB6A29AF1C7000AE8E3C /* BrowserTabView.swift in Sources */,
 				B6B1E88026D5DA9B0062C350 /* DownloadsViewController.swift in Sources */,
@@ -16601,6 +16622,7 @@
 				BB7BAABC2DDBAD5A004A5A58 /* IconsProviding.swift in Sources */,
 				5677BB702E0D641F001EB83B /* SubscriptionNavigationCoordinator.swift in Sources */,
 				BBB3F1F12E302143009E77AF /* ReportProblemFormView.swift in Sources */,
+				CC199E1D2F473678009646F9 /* DefaultBrowserPopoverPromo.swift in Sources */,
 				84658D392EAA09680018D992 /* WindowControllersManagerMock.swift in Sources */,
 				4B0EF7262B578095009D6481 /* AppVersionExtension.swift in Sources */,
 				4BBDEE9328FC14760092FAA6 /* ConnectBitwardenViewModel.swift in Sources */,
@@ -16660,6 +16682,7 @@
 				1DDF076328F815AD00EDFBE3 /* NativeMessagingCommunicator.swift in Sources */,
 				9FEE98652B846870002E44E8 /* AddEditBookmarkView.swift in Sources */,
 				B626A7602992407D00053070 /* CancellableExtension.swift in Sources */,
+				CC199E1E2F47367D009646F9 /* DefaultBrowserBannerPromo.swift in Sources */,
 				4BB99CFE26FE191E001E4761 /* FirefoxBookmarksReader.swift in Sources */,
 				F1DA518C2BF607D200CF29FA /* SubscriptionRedirectManager.swift in Sources */,
 				F17E63352DCCDB150072B3BC /* MainViewController+LogExporter.swift in Sources */,
@@ -17086,6 +17109,7 @@
 				EE650D5F2EB112CA00B3D1D7 /* NewProfilePickerView.swift in Sources */,
 				1DBFD9132D6C7387003F8D98 /* PinnedTabsManagerProvider.swift in Sources */,
 				85CC1D7D26A05F250062F04E /* PasswordManagementItemModel.swift in Sources */,
+				CC199E1F2F4736B4009646F9 /* DefaultBrowserPromptUIProvidersProviding.swift in Sources */,
 				AAD86E52267A0DFF005C11BE /* UpdateController.swift in Sources */,
 				85A0118225AF60E700FA6A0C /* FindInPageModel.swift in Sources */,
 				BBBD2A062E2FE4C6005E7664 /* ViewExtensions.swift in Sources */,

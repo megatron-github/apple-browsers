@@ -900,6 +900,7 @@ final class MainViewController: NSViewController {
     /// - `DefaultBrowserAndDockPromptTypeDecider` - implements timing logic
     @objc private func showSetAsDefaultAndAddToDockIfNeeded() {
         guard !isInPopUpWindow else { return }
+        guard !NSApp.delegateTyped.defaultBrowserAndDockPromptService.isPromoServiceEnabled() else { return }
 
         defaultBrowserAndDockPromptPresenting.tryToShowPrompt(
             popoverAnchorProvider: getSourceViewToShowSetAsDefaultAndAddToDockPopover,
@@ -1305,6 +1306,23 @@ extension MainViewController: AIChatOmnibarControllerDelegate {
     func aiChatOmnibarController(_ controller: AIChatOmnibarController, didSelectSuggestion suggestion: AIChatSuggestion) {
         updateAIChatOmnibarContainerVisibility(visible: false, shouldKeepSelection: false)
         NSApp.delegateTyped.aiChatTabOpener.openAIChatTab(with: .existingChat(chatId: suggestion.chatId), behavior: .currentTab)
+    }
+}
+
+// MARK: - DefaultBrowserPromptUIProvidersProviding
+
+extension MainViewController: DefaultBrowserPromptUIProvidersProviding {
+
+    func providePopoverAnchor() -> NSView? {
+        getSourceViewToShowSetAsDefaultAndAddToDockPopover()
+    }
+
+    func showBanner(_ banner: BannerMessageViewController) {
+        showMessageBanner(banner: banner)
+    }
+
+    func provideInactiveUserModalWindow() -> NSWindow? {
+        getSourceWindowToShowInactiveUserModal()
     }
 }
 

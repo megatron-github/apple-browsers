@@ -21,18 +21,23 @@ import PrivacyConfig
 import Persistence
 
 final class DefaultBrowserAndDockPromptService {
+    let coordinator: DefaultBrowserAndDockPromptCoordinator
     let presenter: DefaultBrowserAndDockPromptPresenting
     let featureFlagger: DefaultBrowserAndDockPromptFeatureFlagger
     let store: DefaultBrowserAndDockPromptKeyValueStore
     let userActivityManager: DefaultBrowserAndDockPromptUserActivityManager
     let notificationPresenter: DefaultBrowserAndDockPromptNotificationPresenting
+    let uiProvidersProvider: () -> DefaultBrowserPromptUIProvidersProviding?
+    let isPromoServiceEnabled: () -> Bool
 
     init(
         featureFlagger: FeatureFlagger,
         privacyConfigManager: PrivacyConfigurationManaging,
         keyValueStore: ThrowingKeyValueStoring,
         notificationPresenter: DefaultBrowserAndDockPromptNotificationPresenting,
-        isOnboardingCompletedProvider: @escaping () -> Bool
+        isOnboardingCompletedProvider: @escaping () -> Bool,
+        uiProvidersProvider: @escaping () -> DefaultBrowserPromptUIProvidersProviding? = { nil },
+        isPromoServiceEnabled: @escaping () -> Bool = { false }
     ) {
 
 #if DEBUG || REVIEW
@@ -64,13 +69,15 @@ final class DefaultBrowserAndDockPromptService {
             installDateProvider: defaultBrowserAndDockInstallDateProvider,
             dateProvider: defaultBrowserAndDockPromptDateProvider
         )
-        let coordinator = DefaultBrowserAndDockPromptCoordinator(
+        self.coordinator = DefaultBrowserAndDockPromptCoordinator(
             promptTypeDecider: defaultBrowserAndDockPromptDecider,
             store: store,
             notificationPresenter: notificationPresenter,
             isOnboardingCompleted: isOnboardingCompletedProvider,
             dateProvider: defaultBrowserAndDockPromptDateProvider
         )
+        self.uiProvidersProvider = uiProvidersProvider
+        self.isPromoServiceEnabled = isPromoServiceEnabled
         let statusUpdateNotifier = DefaultBrowserAndDockPromptStatusUpdateNotifier()
         let uiProvider = DefaultBrowserAndDockPromptUIProvider()
 
