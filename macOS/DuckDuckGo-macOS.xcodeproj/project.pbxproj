@@ -2822,6 +2822,7 @@
 		A1B2C3D42E5F601400000004 /* PromoHistoryProviding.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D42E5F600400000004 /* PromoHistoryProviding.swift */; };
 		A1B2C3D42E5F601500000005 /* PromoHistoryStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D42E5F600600000006 /* PromoHistoryStore.swift */; };
 		A1B2C3D42E5F601600000007 /* PromoService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D42E5F600700000007 /* PromoService.swift */; };
+		A1B2C3D42E5F601700000008 /* NextStepsCardsPromo.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D42E5F600800000008 /* NextStepsCardsPromo.swift */; };
 		AA06B6B72672AF8100F541C5 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = AA06B6B62672AF8100F541C5 /* Sparkle */; };
 		AA0877B826D5160D00B05660 /* SafariVersionReaderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0877B726D5160D00B05660 /* SafariVersionReaderTests.swift */; };
 		AA0877BA26D5161D00B05660 /* WebKitVersionProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0877B926D5161D00B05660 /* WebKitVersionProviderTests.swift */; };
@@ -3829,6 +3830,7 @@
 		CC3967F02F461D7600AE83F2 /* PromoHistoryProviding.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D42E5F600400000004 /* PromoHistoryProviding.swift */; };
 		CC3967F12F461D7B00AE83F2 /* PromoHistoryStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D42E5F600600000006 /* PromoHistoryStore.swift */; };
 		CC3967F22F461D8000AE83F2 /* PromoService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D42E5F600700000007 /* PromoService.swift */; };
+		CC3967F52F461D8300AE83F2 /* NextStepsCardsPromo.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D42E5F600800000008 /* NextStepsCardsPromo.swift */; };
 		CC438E1D2EBCE234008537AD /* DefaultBrowserAndDockPromptUIProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC438E1C2EBCE224008537AD /* DefaultBrowserAndDockPromptUIProvider.swift */; };
 		CC438E1E2EBCE234008537AD /* DefaultBrowserAndDockPromptUIProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC438E1C2EBCE224008537AD /* DefaultBrowserAndDockPromptUIProvider.swift */; };
 		CC438E232EBCEB5A008537AD /* MockDefaultBrowserAndDockPromptUIProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC438E222EBCEB50008537AD /* MockDefaultBrowserAndDockPromptUIProvider.swift */; };
@@ -5743,6 +5745,7 @@
 		A1B2C3D42E5F600400000004 /* PromoHistoryProviding.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromoHistoryProviding.swift; sourceTree = "<group>"; };
 		A1B2C3D42E5F600600000006 /* PromoHistoryStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromoHistoryStore.swift; sourceTree = "<group>"; };
 		A1B2C3D42E5F600700000007 /* PromoService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromoService.swift; sourceTree = "<group>"; };
+		A1B2C3D42E5F600800000008 /* NextStepsCardsPromo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NextStepsCardsPromo.swift; sourceTree = "<group>"; };
 		AA0877B726D5160D00B05660 /* SafariVersionReaderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SafariVersionReaderTests.swift; sourceTree = "<group>"; };
 		AA0877B926D5161D00B05660 /* WebKitVersionProviderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebKitVersionProviderTests.swift; sourceTree = "<group>"; };
 		AA13DCB3271480B0006D48D3 /* FireDialogViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FireDialogViewModel.swift; sourceTree = "<group>"; };
@@ -10048,6 +10051,7 @@
 				A1B2C3D42E5F600400000004 /* PromoHistoryProviding.swift */,
 				A1B2C3D42E5F600600000006 /* PromoHistoryStore.swift */,
 				A1B2C3D42E5F600700000007 /* PromoService.swift */,
+				A1B2C3D42E5F600800000008 /* NextStepsCardsPromo.swift */,
 			);
 			path = Promotions;
 			sourceTree = "<group>";
@@ -14713,6 +14717,7 @@
 				A1B2C3D42E5F601400000004 /* PromoHistoryProviding.swift in Sources */,
 				A1B2C3D42E5F601500000005 /* PromoHistoryStore.swift in Sources */,
 				A1B2C3D42E5F601600000007 /* PromoService.swift in Sources */,
+				A1B2C3D42E5F601700000008 /* NextStepsCardsPromo.swift in Sources */,
 				3706FB83293F65D500E42796 /* NSApplicationExtension.swift in Sources */,
 				E274EFF72E1D55D500373C41 /* NewTabPageOmnibarSuggestionsProvider.swift in Sources */,
 				CCC87D6D2E1412D70091344D /* ChromiumTopSitesReader.swift in Sources */,
@@ -16443,6 +16448,7 @@
 				CC3967F02F461D7600AE83F2 /* PromoHistoryProviding.swift in Sources */,
 				CC3967F12F461D7B00AE83F2 /* PromoHistoryStore.swift in Sources */,
 				CC3967F22F461D8000AE83F2 /* PromoService.swift in Sources */,
+				CC3967F52F461D8300AE83F2 /* NextStepsCardsPromo.swift in Sources */,
 				EEEE20172E57BE7A0071A566 /* SyncDeviceButtonModel.swift in Sources */,
 				37B11B3928095E6600CBB621 /* TabLazyLoader.swift in Sources */,
 				BBC7BDAC2D5BB0890037A4AE /* BannerView.swift in Sources */,
