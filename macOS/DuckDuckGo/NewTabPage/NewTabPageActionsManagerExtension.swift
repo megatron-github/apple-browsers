@@ -64,7 +64,8 @@ extension NewTabPageActionsManager {
         subscriptionCardPersistor: HomePageSubscriptionCardPersisting,
         duckPlayerPreferences: DuckPlayerPreferencesPersistor,
         syncService: DDGSyncing?,
-        pinningManager: PinningManager
+        pinningManager: PinningManager,
+        onNextStepsCardsProviderCreated: ((NewTabPageNextStepsCardsProviding) -> Void)? = nil
     ) {
         self.init(
             appearancePreferences: appearancePreferences,
@@ -95,7 +96,8 @@ extension NewTabPageActionsManager {
             subscriptionCardPersistor: subscriptionCardPersistor,
             duckPlayerPreferences: duckPlayerPreferences,
             syncService: syncService,
-            pinningManager: pinningManager
+            pinningManager: pinningManager,
+            onNextStepsCardsProviderCreated: onNextStepsCardsProviderCreated
         )
     }
 
@@ -129,7 +131,8 @@ extension NewTabPageActionsManager {
         subscriptionCardPersistor: HomePageSubscriptionCardPersisting,
         duckPlayerPreferences: DuckPlayerPreferencesPersistor,
         syncService: DDGSyncing?,
-        pinningManager: PinningManager
+        pinningManager: PinningManager,
+        onNextStepsCardsProviderCreated: ((NewTabPageNextStepsCardsProviding) -> Void)? = nil
     ) {
         let availabilityProvider = NewTabPageSectionsAvailabilityProvider(featureFlagger: featureFlagger)
         let favoritesPublisher = bookmarkManager.listPublisher.map({ $0?.favoriteBookmarks ?? [] }).eraseToAnyPublisher()
@@ -190,6 +193,30 @@ extension NewTabPageActionsManager {
         let dataImportProvider = BookmarksAndPasswordsImportStatusProvider(bookmarkManager: bookmarkManager, pinningManager: pinningManager)
         let nextStepsPixelHandler = NewTabPageNextStepsCardsPixelHandler()
 
+        let nextStepsProvider = NewTabPageNextStepsCardsProviderFacade(
+            featureFlagger: featureFlagger,
+            dataImportProvider: dataImportProvider,
+            subscriptionCardVisibilityManager: subscriptionCardVisibilityManager,
+            legacyPersistor: homePageContinueSetUpModelPersistor,
+            pixelHandler: nextStepsPixelHandler,
+            cardActionsHandler: NewTabPageNextStepsCardsActionHandler(
+                defaultBrowserProvider: SystemDefaultBrowserProvider(),
+                dockCustomizer: DockCustomizer(),
+                dataImportProvider: dataImportProvider,
+                tabOpener: NewTabPageTabOpener(),
+                privacyConfigurationManager: contentBlocking.privacyConfigurationManager,
+                pixelHandler: nextStepsPixelHandler,
+                newTabPageNavigator: DefaultNewTabPageNavigator(),
+                featureFlagger: featureFlagger
+            ),
+            appearancePreferences: appearancePreferences,
+            legacySubscriptionCardPersistor: subscriptionCardPersistor,
+            persistor: nextStepsCardsPersistor,
+            duckPlayerPreferences: duckPlayerPreferences,
+            syncService: syncService
+        )
+        onNextStepsCardsProviderCreated?(nextStepsProvider)
+
         self.init(scriptClients: [
             NewTabPageConfigurationClient(
                 sectionsAvailabilityProvider: availabilityProvider,
@@ -203,30 +230,7 @@ extension NewTabPageActionsManager {
             NewTabPageCustomBackgroundClient(model: customizationProvider),
             NewTabPageRMFClient(remoteMessageProvider: activeRemoteMessageModel),
             NewTabPageFreemiumDBPClient(provider: freemiumDBPBannerProvider),
-            NewTabPageNextStepsCardsClient(
-                model: NewTabPageNextStepsCardsProviderFacade(
-                    featureFlagger: featureFlagger,
-                    dataImportProvider: dataImportProvider,
-                    subscriptionCardVisibilityManager: subscriptionCardVisibilityManager,
-                    legacyPersistor: homePageContinueSetUpModelPersistor,
-                    pixelHandler: nextStepsPixelHandler,
-                    cardActionsHandler: NewTabPageNextStepsCardsActionHandler(
-                        defaultBrowserProvider: SystemDefaultBrowserProvider(),
-                        dockCustomizer: DockCustomizer(),
-                        dataImportProvider: dataImportProvider,
-                        tabOpener: NewTabPageTabOpener(),
-                        privacyConfigurationManager: contentBlocking.privacyConfigurationManager,
-                        pixelHandler: nextStepsPixelHandler,
-                        newTabPageNavigator: DefaultNewTabPageNavigator(),
-                        featureFlagger: featureFlagger
-                    ),
-                    appearancePreferences: appearancePreferences,
-                    legacySubscriptionCardPersistor: subscriptionCardPersistor,
-                    persistor: nextStepsCardsPersistor,
-                    duckPlayerPreferences: duckPlayerPreferences,
-                    syncService: syncService
-                )
-            ),
+            NewTabPageNextStepsCardsClient(model: nextStepsProvider),
             NewTabPageFavoritesClient(favoritesModel: favoritesModel, preferredFaviconSize: Int(Favicon.SizeCategory.medium.rawValue)),
             NewTabPageProtectionsReportClient(model: protectionsReportModel),
             NewTabPagePrivacyStatsClient(model: privacyStatsModel),

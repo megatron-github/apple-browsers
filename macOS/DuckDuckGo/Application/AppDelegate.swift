@@ -206,7 +206,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         subscriptionCardPersistor: homePageSetUpDependencies.subscriptionCardPersistor,
         duckPlayerPreferences: DuckPlayerPreferencesUserDefaultsPersistor(),
         syncService: syncService,
-        pinningManager: pinningManager
+        pinningManager: pinningManager,
+        onNextStepsCardsProviderCreated: { [weak self] provider in self?.nextStepsCardsProvider = provider }
     )
 
     private(set) lazy var aiChatTabOpener: AIChatTabOpening = AIChatTabOpener(
@@ -236,6 +237,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     let remoteMessagingClient: RemoteMessagingClient!
     let onboardingContextualDialogsManager: ContextualOnboardingDialogTypeProviding & ContextualOnboardingStateUpdater
     let defaultBrowserAndDockPromptService: DefaultBrowserAndDockPromptService
+    private var nextStepsCardsProvider: NewTabPageNextStepsCardsProviding?
+    private(set) var promoService: PromoService!
     private lazy var webNotificationClickHandler = WebNotificationClickHandler(tabFinder: windowControllersManager)
     let userChurnScheduler: UserChurnBackgroundActivityScheduler
     lazy var vpnUpsellPopoverPresenter = DefaultVPNUpsellPopoverPresenter(
@@ -896,7 +899,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                                                                                 privacyConfigManager: privacyConfigurationManager,
                                                                                 keyValueStore: keyValueStore,
                                                                                 notificationPresenter: notificationPresenter,
-                                                                                isOnboardingCompletedProvider: { onboardingManager.state == .onboardingCompleted })
+                                                                                isOnboardingCompletedProvider: { onboardingManager.state == .onboardingCompleted },
+                                                                                uiProvidersProvider: { NSApp.keyWindow?.contentViewController as? DefaultBrowserPromptUIProvidersProviding },
+                                                                                isPromoServiceEnabled: { true })
 
         if AppVersion.runType.requiresEnvironment {
             remoteMessagingClient = RemoteMessagingClient(
@@ -1382,6 +1387,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
 
         defaultBrowserAndDockPromptService.applicationDidBecomeActive()
+
+        if promoService == nil {
+            promoService = makePromoService()
+        }
 
         Task { @MainActor in
             await autoconsentStatsPopoverCoordinator.checkAndShowDialogIfNeeded()
@@ -1975,6 +1984,58 @@ extension AppDelegate: UNUserNotificationCenterDelegate {
         }
     }
 
+}
+
+extension AppDelegate {
+
+    @MainActor
+    private func makePromoService() -> PromoService {
+        _ = newTabPageCoordinator
+        let isPromoServiceEnabled: () -> Bool = { self.defaultBrowserAndDockPromptService.isPromoServiceEnabled() }
+        let service = defaultBrowserAndDockPromptService
+
+        var promos: [any Promo] = []
+        if let provider = nextStepsCardsProvider {
+            promos.append(NextStepsCardsPromo(provider: provider, isPromoServiceEnabled: isPromoServiceEnabled))
+        }
+        promos.append(RemoteMessagePromo(provider: activeRemoteMessageModel, isPromoServiceEnabled: isPromoServiceEnabled))
+        promos.append(DefaultBrowserInactiveModalPromo(
+            coordinator: service.coordinator,
+            presenter: service.presenter,
+            uiProvidersProvider: service.uiProvidersProvider,
+            isPromoServiceEnabled: isPromoServiceEnabled
+        ))
+        promos.append(DefaultBrowserBannerPromo(
+            coordinator: service.coordinator,
+            presenter: service.presenter,
+            uiProvidersProvider: service.uiProvidersProvider,
+            isPromoServiceEnabled: isPromoServiceEnabled
+        ))
+        promos.append(DefaultBrowserPopoverPromo(
+            coordinator: service.coordinator,
+            presenter: service.presenter,
+            uiProvidersProvider: service.uiProvidersProvider,
+            isPromoServiceEnabled: isPromoServiceEnabled
+        ))
+
+        let triggerPublisher = Publishers.Merge(
+            NotificationCenter.default.publisher(for: .newTabPageWebViewDidAppear)
+                .map { _ in PromoTrigger.newTabPageAppeared },
+            NotificationCenter.default.publisher(for: NSWindow.didBecomeKeyNotification)
+                .map { _ in PromoTrigger.windowBecameKey }
+        ).eraseToAnyPublisher()
+
+        let historyStore = PromoHistoryStore(store: keyValueStore)
+        let isExternalLaunch = false
+
+        return PromoService(
+            promos: promos,
+            historyStore: historyStore,
+            isExternalLaunch: isExternalLaunch,
+            triggerPublisher: triggerPublisher,
+            nextStepsPromoIds: ["next-steps-cards", "remote-message"]
+        )
+    }
 }
 
 extension AppDelegate: UserScriptDependenciesProviding {
