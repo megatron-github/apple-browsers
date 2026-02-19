@@ -239,6 +239,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     let defaultBrowserAndDockPromptService: DefaultBrowserAndDockPromptService
     private var nextStepsCardsProvider: NewTabPageNextStepsCardsProviding?
     private(set) var promoService: PromoService!
+    private var wasExternalLaunch = false
+    private var externalActivationCancellables = Set<AnyCancellable>()
     private lazy var webNotificationClickHandler = WebNotificationClickHandler(tabFinder: windowControllersManager)
     let userChurnScheduler: UserChurnBackgroundActivityScheduler
     lazy var vpnUpsellPopoverPresenter = DefaultVPNUpsellPopoverPresenter(
@@ -1230,6 +1232,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             stateRestorationManager.applicationDidFinishLaunching()
         }
         let urlEventHandlerResult = urlEventHandler.applicationDidFinishLaunching()
+        wasExternalLaunch = urlEventHandlerResult.willOpenWindows
+
+        NotificationCenter.default.publisher(for: .externalURLHandled)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.promoService?.notifyExternalActivation()
+            }
+            .store(in: &externalActivationCancellables)
 
         setUpAutoClearHandler()
         BWManager.shared.initCommunication()
@@ -1390,6 +1400,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         if promoService == nil {
             promoService = makePromoService()
+        }
+
+        if urlEventHandler.consumeExternalURLFlag() {
+            promoService?.notifyExternalActivation()
         }
 
         Task { @MainActor in
@@ -2026,7 +2040,7 @@ extension AppDelegate {
         ).eraseToAnyPublisher()
 
         let historyStore = PromoHistoryStore(store: keyValueStore)
-        let isExternalLaunch = false
+        let isExternalLaunch = wasExternalLaunch
 
         return PromoService(
             promos: promos,

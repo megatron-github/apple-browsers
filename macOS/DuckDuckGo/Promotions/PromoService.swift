@@ -71,12 +71,26 @@ final class PromoService {
         historyStore.save(record)
     }
 
+    /// Notifies that the app was activated by an external source (e.g. deep link). Suppresses promos for a short window.
+    func notifyExternalActivation() {
+        isExternallyActivated = true
+        externalActivationClearTask?.cancel()
+        externalActivationClearTask = Task { [weak self] in
+            try? await Task.sleep(nanoseconds: UInt64(Self.externalActivationWindow * 1_000_000_000))
+            self?.isExternallyActivated = false
+        }
+    }
+
     // MARK: - Internal state
+
+    private static let externalActivationWindow: TimeInterval = 5.0
 
     private let promos: [any Promo]
     private let historyStore: PromoHistoryStoring
-    private let isExternalLaunch: Bool
     private let nextStepsPromoIds: Set<String>
+
+    private var isExternallyActivated = false
+    private var externalActivationClearTask: Task<Void, Never>?
 
     private var activeSessions: [String: ActiveShowSession] = [:]
     private let visiblePromoIds: CurrentValueSubject<Set<String>, Never>
@@ -95,9 +109,12 @@ final class PromoService {
     ) {
         self.promos = promos
         self.historyStore = historyStore
-        self.isExternalLaunch = isExternalLaunch
         self.nextStepsPromoIds = nextStepsPromoIds
         self.visiblePromoIds = CurrentValueSubject([])
+
+        if isExternalLaunch {
+            notifyExternalActivation()
+        }
 
         triggerPublisher
             .receive(on: evaluationQueue)
@@ -121,7 +138,7 @@ final class PromoService {
     // MARK: - Restore on restart
 
     private func restoreVisiblePromos() {
-        guard !isExternalLaunch else { return }
+        guard !isExternallyActivated else { return }
         let persistedIds = historyStore.loadVisiblePromoIds()
         guard !persistedIds.isEmpty else { return }
 
@@ -157,7 +174,7 @@ final class PromoService {
     // MARK: - Step 1: Rules
 
     private func checkRules(for promo: any Promo) -> Bool {
-        if isExternalLaunch { return false }
+        if isExternallyActivated { return false }
 
         let visibleIds = visiblePromoIds.value
         let promoId = promo.id
