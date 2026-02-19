@@ -296,6 +296,9 @@ public enum FeatureFlag: String, CaseIterable {
 
     /// https://app.asana.com/1/137249556945/project/1211834678943996/task/1212901927858518?focus=true
     case supportsSyncChatsDeletion
+
+    /// Registry link TBD
+    case ctaQueue
 }
 
 extension FeatureFlag: FeatureFlagDescribing {
@@ -330,7 +333,8 @@ extension FeatureFlag: FeatureFlagDescribing {
                 .crashCollectionDisableKeysSorting,
                 .crashCollectionLimitCallStackTreeDepth,
                 .memoryUsageReporting,
-                .nextStepsListWidget:
+                .nextStepsListWidget,
+                .ctaQueue:
             true
         default:
             false
@@ -423,7 +427,8 @@ extension FeatureFlag: FeatureFlagDescribing {
                 .nextStepsListAdvancedCardOrdering,
                 .wideEventPostEndpoint,
                 .freeTrialConversionWideEvent,
-                .supportsSyncChatsDeletion:
+                .supportsSyncChatsDeletion,
+                .ctaQueue:
             return true
         case .freemiumDBP,
                 .contextualOnboarding,
@@ -610,6 +615,8 @@ extension FeatureFlag: FeatureFlagDescribing {
             return .remoteReleasable(.subfeature(PrivacyProSubfeature.freeTrialConversionWideEvent))
         case .supportsSyncChatsDeletion:
             return .remoteReleasable(.subfeature(AIChatSubfeature.supportsSyncChatsDeletion))
+        case .ctaQueue:
+            return .internalOnly()
         }
     }
 }

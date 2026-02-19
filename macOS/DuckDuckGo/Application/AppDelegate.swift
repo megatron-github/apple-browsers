@@ -2005,7 +2005,7 @@ extension AppDelegate {
     @MainActor
     private func makePromoService() -> PromoService {
         _ = newTabPageCoordinator
-        let isPromoServiceEnabled: () -> Bool = { self.defaultBrowserAndDockPromptService.isPromoServiceEnabled() }
+        let isPromoServiceEnabled: () -> Bool = { [weak self] in self?.featureFlagger.isFeatureOn(.ctaQueue) ?? false }
 
         var promos: [any Promo] = []
         if let provider = nextStepsCardsProvider {
