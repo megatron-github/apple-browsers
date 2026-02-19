@@ -41,7 +41,6 @@ final class RemoteMessagePromo: Promo {
     private let provider: NewTabPageActiveRemoteMessageProviding
     private let isPromoServiceEnabled: () -> Bool
     private let eligibilitySubject: CurrentValueSubject<Bool, Never>
-    private var showContinuation: CheckedContinuation<PromoResult, Never>?
     private var cancellables = Set<AnyCancellable>()
 
     init(
@@ -64,14 +63,14 @@ final class RemoteMessagePromo: Promo {
             .store(in: &cancellables)
     }
 
+    /// Slot-reservation pattern: legacy code presents the remote message. Return immediately so
+    /// PromoService can record the slot and continue. Visibility is tracked via isEligiblePublisher;
+    /// when the message is dismissed, eligibility goes false and PromoService cleans up via handleEligibilityLost.
     func show(history: PromoHistoryRecord) async -> PromoResult {
-        await withCheckedContinuation { continuation in
-            showContinuation = continuation
-        }
+        .none
     }
 
     func hide() {
-        showContinuation?.resume(returning: .none)
-        showContinuation = nil
+        // No-op: slot-reservation promos don't present their own UI.
     }
 }
