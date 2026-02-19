@@ -900,8 +900,14 @@ final class MainViewController: NSViewController {
     /// - `DefaultBrowserAndDockPromptTypeDecider` - implements timing logic
     @objc private func showSetAsDefaultAndAddToDockIfNeeded() {
         guard !isInPopUpWindow else { return }
-        guard !NSApp.delegateTyped.defaultBrowserAndDockPromptService.isPromoServiceEnabled() else { return }
-
+        let service = NSApp.delegateTyped.defaultBrowserAndDockPromptService
+        if service.isPromoServiceEnabled() {
+            // PromoService owns showing prompts; still update eligibility so Default Browser promos
+            // (DefaultBrowserBannerPromo, DefaultBrowserPopoverPromo, DefaultBrowserInactiveModalPromo)
+            // see correct state via coordinator.popoverEligibility / bannerEligibility / inactiveModalEligibility.
+            service.coordinator.evaluateEligibility()
+            return
+        }
         defaultBrowserAndDockPromptPresenting.tryToShowPrompt(
             popoverAnchorProvider: getSourceViewToShowSetAsDefaultAndAddToDockPopover,
             bannerViewHandler: showMessageBanner,
