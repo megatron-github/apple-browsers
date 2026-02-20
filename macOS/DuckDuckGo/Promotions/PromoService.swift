@@ -215,11 +215,11 @@ final class PromoService {
             }
         }
 
-        if severity >= .medium {
+        if promo.respectsGlobalCooldown && severity >= .medium {
             let cooldownHours = promo.initiated.cooldownHours
             let cooldownInterval = TimeInterval(cooldownHours * 3600)
             let lastDismissedForType = promos
-                .filter { $0.initiated == promo.initiated }
+                .filter { $0.initiated == promo.initiated && $0.setsGlobalCooldown }
                 .compactMap { historyStore.record(for: $0.id).lastDismissed }
                 .max()
             if let last = lastDismissedForType, currentDate.timeIntervalSince(last) < cooldownInterval {

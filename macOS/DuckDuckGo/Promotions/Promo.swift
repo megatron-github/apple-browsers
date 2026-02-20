@@ -42,6 +42,14 @@ protocol Promo: AnyObject {
     /// Default: empty (no coexistence exceptions).
     var coexistingPromoIDs: Set<String> { get }
 
+    /// When false, this promo can show even if the global cooldown for its PromoInitiated type hasn't elapsed.
+    /// Default: true.
+    var respectsGlobalCooldown: Bool { get }
+
+    /// When false, dismissing this promo does not count toward the global cooldown for its PromoInitiated type.
+    /// Default: true.
+    var setsGlobalCooldown: Bool { get }
+
     /// Current eligibility state. Use isEligiblePublisher to observe changes.
     var isEligible: Bool { get }
 
@@ -63,4 +71,6 @@ protocol Promo: AnyObject {
 
 extension Promo {
     var coexistingPromoIDs: Set<String> { [] }
+    var respectsGlobalCooldown: Bool { true }
+    var setsGlobalCooldown: Bool { true }
 }
