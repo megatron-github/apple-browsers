@@ -2012,9 +2012,9 @@ extension AppDelegate {
             promos.append(NextStepsCardsPromo(provider: provider, isPromoServiceEnabled: isPromoServiceEnabled))
         }
         promos.append(RemoteMessagePromo(provider: activeRemoteMessageModel, isPromoServiceEnabled: isPromoServiceEnabled))
-        promos.append(DefaultBrowserInactiveModalPromo(service: defaultBrowserAndDockPromptService, isPromoServiceEnabled: isPromoServiceEnabled))
-        promos.append(DefaultBrowserBannerPromo(service: defaultBrowserAndDockPromptService, isPromoServiceEnabled: isPromoServiceEnabled))
         promos.append(DefaultBrowserPopoverPromo(service: defaultBrowserAndDockPromptService, isPromoServiceEnabled: isPromoServiceEnabled))
+        promos.append(DefaultBrowserBannerPromo(service: defaultBrowserAndDockPromptService, isPromoServiceEnabled: isPromoServiceEnabled))
+        promos.append(DefaultBrowserInactiveModalPromo(service: defaultBrowserAndDockPromptService, isPromoServiceEnabled: isPromoServiceEnabled))
 
         let triggerPublisher = Publishers.Merge(
             NotificationCenter.default.publisher(for: .newTabPageWebViewDidAppear)
