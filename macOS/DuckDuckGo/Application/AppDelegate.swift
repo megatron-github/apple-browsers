@@ -2030,8 +2030,7 @@ extension AppDelegate {
             promos: promos,
             historyStore: historyStore,
             isExternalLaunch: isExternalLaunch,
-            triggerPublisher: triggerPublisher,
-            nextStepsPromoIds: ["next-steps-cards", "remote-message"]
+            triggerPublisher: triggerPublisher
         )
     }
 }

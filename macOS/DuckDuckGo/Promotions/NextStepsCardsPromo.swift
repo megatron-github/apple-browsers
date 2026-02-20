@@ -64,9 +64,8 @@ final class NextStepsCardsPromo: Promo {
             .store(in: &cancellables)
     }
 
-    /// Slot-reservation pattern: legacy code presents the cards. Suspend until PromoService calls
-    /// hide() (via handleEligibilityLost when isEligiblePublisher emits false). Keeps the promo
-    /// in activeSessions so conflict rules suppress other promos while cards are visible.
+    /// Legacy code presents the cards. Suspend until PromoService calls hide() (via handleEligibilityLost
+    /// when isEligiblePublisher emits false) or the show task is cancelled.
     func show(history: PromoHistoryRecord) async -> PromoResult {
         await withTaskCancellationHandler {
             await withCheckedContinuation { continuation in
@@ -74,14 +73,14 @@ final class NextStepsCardsPromo: Promo {
             }
         } onCancel: { [weak self] in
             Task { @MainActor in
-                self?.showContinuation?.resume(returning: .none)
+                self?.showContinuation?.resume(returning: .ignored())
                 self?.showContinuation = nil
             }
         }
     }
 
     func hide() {
-        showContinuation?.resume(returning: .none)
+        showContinuation?.resume(returning: .ignored())
         showContinuation = nil
     }
 }

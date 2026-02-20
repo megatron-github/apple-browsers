@@ -33,7 +33,7 @@ struct ActiveShowSession {
     /// Task that sleeps for promoType.timeoutInterval. On fire, records timeoutResult if !isResultRecorded.
     var timeoutTask: Task<Void, Never>?
 
-    /// Subscription to isEligiblePublisher. On false, hides and records .none if !isResultRecorded.
+    /// Subscription to isEligiblePublisher. On false, calls hide() so the promo resumes with its chosen result; the result flows through handleShowResult.
     var eligibilityCancellable: AnyCancellable?
 }
 
@@ -105,7 +105,6 @@ final class PromoService {
 
     private let promos: [any Promo]
     private let historyStore: PromoHistoryStoring
-    private let nextStepsPromoIds: Set<String>
 
     private var isExternallyActivated = false
     private var externalActivationClearTask: Task<Void, Never>?
@@ -126,12 +125,10 @@ final class PromoService {
         promos: [any Promo],
         historyStore: PromoHistoryStoring,
         isExternalLaunch: Bool,
-        triggerPublisher: AnyPublisher<PromoTrigger, Never>,
-        nextStepsPromoIds: Set<String> = []
+        triggerPublisher: AnyPublisher<PromoTrigger, Never>
     ) {
         self.promos = promos
         self.historyStore = historyStore
-        self.nextStepsPromoIds = nextStepsPromoIds
         self.visiblePromoIds = CurrentValueSubject([])
 
         if isExternalLaunch {
@@ -228,10 +225,6 @@ final class PromoService {
             if let last = lastDismissedForType, currentDate.timeIntervalSince(last) < cooldownInterval {
                 return false
             }
-
-            if context == .newTabPage && !visibleIds.isDisjoint(with: nextStepsPromoIds) {
-                return false
-            }
         }
 
         return true
@@ -292,7 +285,8 @@ final class PromoService {
     }
 
     private func handleEligibilityLost(promoId: String) {
-        recordResultAndCleanup(promoId: promoId, result: .none)
+        guard let session = activeSessions[promoId], !session.isResultRecorded else { return }
+        session.promo.hide()
     }
 
     private func recordResultAndCleanup(promoId: String, result: PromoResult) {
