@@ -100,11 +100,24 @@ final class PromoService {
         }
     }
 
+    /// Defers trigger evaluation for a short window after app activation, giving the URL event handler time to deliver its Apple Event and set the external activation flag.
+    func deferEvaluation() {
+        isEvaluationDeferred = true
+        deferralTask?.cancel()
+        deferralTask = Task { @MainActor [weak self] in
+            try? await Task.sleep(nanoseconds: UInt64(Self.evaluationDeferralWindow * 1_000_000_000))
+            guard !Task.isCancelled else { return }
+            await self?.processTriggersAfterExternalActivationCheck()
+        }
+    }
+
     // MARK: - Internal state
 
     private static let externalActivationWindow: TimeInterval = 5.0
     /// Grace period after start() during which promos (e.g. NextStepsCardsPromo) can still register before evaluation begins.
     private static let registrationGracePeriod: TimeInterval = 3.0
+    /// Grace period after app activation during which trigger evaluation is deferred, giving the URL event handler time to set its external activation flag.
+    private static let evaluationDeferralWindow: TimeInterval = 0.5
 
     private var registeredPromos: [(promo: any Promo, priority: PromoPriority)] = []
     /// Promos in priority order. Derived from registeredPromos (all registered before the grace period ends).
@@ -117,12 +130,20 @@ final class PromoService {
     private let historyStore: PromoHistoryStoring
     private let triggerPublisher: AnyPublisher<PromoTrigger, Never>
 
+    /// Suppresses all promos when true. Set by URL event handler on external activation, cleared after a delay.
     private var isExternallyActivated = false
     private var externalActivationClearTask: Task<Void, Never>?
+
+    /// Defers trigger evaluation when true, to allow time to receive the Apple URL event.
+    /// Set by URL event handler on activation, cleared after a delay when deferred evaluation runs.
+    private var isEvaluationDeferred = false
+    private var deferralTask: Task<Void, Never>?
 
     private var activeSessions: [String: ActiveShowSession] = [:]
     private let visiblePromoIds: CurrentValueSubject<Set<String>, Never>
     private var cancellables = Set<AnyCancellable>()
+
+    /// Triggers to be evaluated after a delay.
     private var bufferedTriggers = Set<PromoTrigger>()
 
     private let evaluationQueue = DispatchQueue(label: "com.duckduckgo.promoService.evaluation")
@@ -158,10 +179,10 @@ final class PromoService {
             .sink { [weak self] trigger in
                 Task { @MainActor in
                     guard let self else { return }
-                    if self.isRegistrationLocked {
-                        await self.evaluateTrigger(trigger)
-                    } else {
+                    if !self.isRegistrationLocked || self.isEvaluationDeferred {
                         self.bufferedTriggers.insert(trigger)
+                    } else {
+                        await self.evaluateTrigger(trigger)
                     }
                 }
             }
@@ -189,12 +210,12 @@ final class PromoService {
             guard !Task.isCancelled else { return }
             self.isRegistrationLocked = true
 
-            self.processBufferedTriggers()
+            self.processTriggersAfterRegistrationLocks()
             self.restoreVisiblePromos()
         }
     }
 
-    private func processBufferedTriggers() {
+    private func processTriggersAfterRegistrationLocks() {
         let buffered = bufferedTriggers
         bufferedTriggers.removeAll()
         guard !buffered.isEmpty, !isExternallyActivated else { return }
@@ -211,6 +232,18 @@ final class PromoService {
             guard promo.isEligible else { continue }
 
             performShow(promo: promo, record: record, isRestore: false)
+        }
+    }
+
+    private func processTriggersAfterExternalActivationCheck() async {
+        isEvaluationDeferred = false
+        let buffered = bufferedTriggers
+        bufferedTriggers.removeAll()
+        guard !buffered.isEmpty else { return }
+        guard !isExternallyActivated else { return }
+
+        for trigger in buffered {
+            await evaluateTrigger(trigger)
         }
     }
 
