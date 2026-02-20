@@ -139,11 +139,17 @@ final class DefaultBrowserAndDockPromptDebugMenu: NSMenu {
         case .success(.some(let date)):
             // OK clicked - set new override date
             debugStore.simulatedTodayDate = date
+            Task { @MainActor in
+                NSApp.delegateTyped.promoService?.debugSimulatedDate = date
+            }
             userActivityManager.recordActivity()
             updateMenuItemsState()
         case .success(.none):
             // Reset clicked - clear the override
             debugStore.simulatedTodayDate = nil
+            Task { @MainActor in
+                NSApp.delegateTyped.promoService?.debugSimulatedDate = nil
+            }
             userActivityManager.recordActivity()
             updateMenuItemsState()
         case .failure:
@@ -196,6 +202,9 @@ final class DefaultBrowserAndDockPromptDebugMenu: NSMenu {
         store.inactiveUserModalShownDate = nil
         store.isBannerPermanentlyDismissed = false
         userActivityStore.save(DefaultBrowserAndDockPromptUserActivity(lastActiveDate: Date()))
+        Task { @MainActor in
+            NSApp.delegateTyped.promoService?.resetDebugState()
+        }
         updateMenuItemsState()
     }
 
@@ -441,6 +450,9 @@ final class DefaultBrowserAndDockPromptDebugMenu: NSMenu {
         let currentDate = debugStore.simulatedTodayDate ?? Date()
         let newDate = currentDate.addingTimeInterval(.days(14))
         debugStore.simulatedTodayDate = newDate
+        Task { @MainActor in
+            NSApp.delegateTyped.promoService?.debugSimulatedDate = newDate
+        }
         updateMenuItemsState()
     }
 

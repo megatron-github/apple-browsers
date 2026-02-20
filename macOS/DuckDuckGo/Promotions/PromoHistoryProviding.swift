@@ -37,4 +37,7 @@ protocol PromoHistoryStoring: PromoHistoryProviding {
 
     /// Loads persisted visible promo IDs. Returns empty set on failure.
     func loadVisiblePromoIds() -> Set<String>
+
+    /// Clears all history records and persisted visible promo IDs. For debug reset.
+    func resetAll()
 }

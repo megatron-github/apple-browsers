@@ -71,6 +71,24 @@ final class PromoService {
         historyStore.save(record)
     }
 
+    /// Debug: simulated "now" for cooldown and eligibility checks. Set by debug menus when advancing time.
+    /// In-memory only; nil in production.
+    var debugSimulatedDate: Date?
+
+    /// Clears debug date override and all promo history. For debug reset.
+    func resetDebugState() {
+        debugSimulatedDate = nil
+        for (promoId, session) in activeSessions {
+            session.showTask?.cancel()
+            session.timeoutTask?.cancel()
+            session.eligibilityCancellable?.cancel()
+            session.promo.hide()
+        }
+        activeSessions.removeAll()
+        visiblePromoIds.send([])
+        historyStore.resetAll()
+    }
+
     /// Notifies that the app was activated by an external source (e.g. deep link). Suppresses promos for a short window.
     func notifyExternalActivation() {
         isExternallyActivated = true
@@ -97,6 +115,10 @@ final class PromoService {
     private var cancellables = Set<AnyCancellable>()
 
     private let evaluationQueue = DispatchQueue(label: "com.duckduckgo.promoService.evaluation")
+
+    private var currentDate: Date {
+        debugSimulatedDate ?? Date()
+    }
 
     // MARK: - Init
 
@@ -145,7 +167,7 @@ final class PromoService {
         for promoId in persistedIds {
             guard let promo = promos.first(where: { $0.id == promoId }) else { continue }
             let record = historyStore.record(for: promoId)
-            guard !record.isPermanentlyDismissed, record.isEligible else { continue }
+            guard !record.isPermanentlyDismissed, record.isEligible(asOf: currentDate) else { continue }
             guard promo.isEligible else { continue }
 
             performShow(promo: promo, record: record, isRestore: true)
@@ -162,7 +184,7 @@ final class PromoService {
             guard passesRules else { continue }
 
             let record = historyStore.record(for: promo.id)
-            guard !record.isPermanentlyDismissed, record.isEligible else { continue }
+            guard !record.isPermanentlyDismissed, record.isEligible(asOf: currentDate) else { continue }
 
             guard promo.isEligible else { continue }
 
@@ -203,7 +225,7 @@ final class PromoService {
                 .filter { $0.initiated == promo.initiated }
                 .compactMap { historyStore.record(for: $0.id).lastDismissed }
                 .max()
-            if let last = lastDismissedForType, Date().timeIntervalSince(last) < cooldownInterval {
+            if let last = lastDismissedForType, currentDate.timeIntervalSince(last) < cooldownInterval {
                 return false
             }
 
@@ -293,14 +315,14 @@ final class PromoService {
         case .actioned, .ignored(cooldown: nil):
             var record = historyStore.record(for: promoId)
             record.timesDismissed += 1
-            record.lastDismissed = Date()
+            record.lastDismissed = currentDate
             record.nextEligibleDate = .distantFuture
             historyStore.save(record)
         case .ignored(cooldown: let interval?):
             var record = historyStore.record(for: promoId)
             record.timesDismissed += 1
-            record.lastDismissed = Date()
-            record.nextEligibleDate = Date().addingTimeInterval(interval)
+            record.lastDismissed = currentDate
+            record.nextEligibleDate = currentDate.addingTimeInterval(interval)
             historyStore.save(record)
         case .none:
             break
@@ -317,13 +339,13 @@ final class PromoService {
         switch result {
         case .actioned, .ignored(cooldown: nil):
             record.timesDismissed += 1
-            record.lastDismissed = Date()
+            record.lastDismissed = currentDate
             record.nextEligibleDate = .distantFuture
             historyStore.save(record)
         case .ignored(cooldown: let interval?):
             record.timesDismissed += 1
-            record.lastDismissed = Date()
-            record.nextEligibleDate = Date().addingTimeInterval(interval)
+            record.lastDismissed = currentDate
+            record.nextEligibleDate = currentDate.addingTimeInterval(interval)
             historyStore.save(record)
         case .none:
             break

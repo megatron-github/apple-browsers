@@ -97,6 +97,13 @@ final class PromoHistoryStore: PromoHistoryStoring {
         }
     }
 
+    func resetAll() {
+        records = [:]
+        persist()
+        saveVisiblePromoIds([])
+        recordsSubject.send(records)
+    }
+
     private func persist() {
         do {
             let data = try Self.encoder.encode(records)

@@ -33,6 +33,11 @@ struct PromoHistoryRecord: Codable, Equatable {
         return nextEligibleDate <= Date()
     }
 
+    func isEligible(asOf date: Date) -> Bool {
+        guard let nextEligibleDate else { return true }
+        return nextEligibleDate <= date
+    }
+
     init(id: String) {
         self.id = id
         self.timesDismissed = 0
