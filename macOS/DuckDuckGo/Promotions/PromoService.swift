@@ -123,6 +123,7 @@ final class PromoService {
     private var activeSessions: [String: ActiveShowSession] = [:]
     private let visiblePromoIds: CurrentValueSubject<Set<String>, Never>
     private var cancellables = Set<AnyCancellable>()
+    private var bufferedTriggers = Set<PromoTrigger>()
 
     private let evaluationQueue = DispatchQueue(label: "com.duckduckgo.promoService.evaluation")
 
@@ -151,6 +152,20 @@ final class PromoService {
                 self?.historyStore.saveVisiblePromoIds(ids)
             }
             .store(in: &cancellables)
+
+        triggerPublisher
+            .receive(on: evaluationQueue)
+            .sink { [weak self] trigger in
+                Task { @MainActor in
+                    guard let self else { return }
+                    if self.isRegistrationLocked {
+                        await self.evaluateTrigger(trigger)
+                    } else {
+                        self.bufferedTriggers.insert(trigger)
+                    }
+                }
+            }
+            .store(in: &cancellables)
     }
 
     /// Registers a promo with the given priority. Must be called before the registration grace period ends (see start()).
@@ -174,16 +189,28 @@ final class PromoService {
             guard !Task.isCancelled else { return }
             self.isRegistrationLocked = true
 
-            self.triggerPublisher
-                .receive(on: self.evaluationQueue)
-                .sink { [weak self] trigger in
-                    Task { @MainActor in
-                        await self?.evaluateTrigger(trigger)
-                    }
-                }
-                .store(in: &self.cancellables)
-
+            self.processBufferedTriggers()
             self.restoreVisiblePromos()
+        }
+    }
+
+    private func processBufferedTriggers() {
+        let buffered = bufferedTriggers
+        bufferedTriggers.removeAll()
+        guard !buffered.isEmpty, !isExternallyActivated else { return }
+
+        for promo in promos {
+            guard !promo.triggers.isDisjoint(with: buffered) else { continue }
+
+            promo.refreshEligibility()
+            let passesRules = checkRules(for: promo)
+            guard passesRules else { continue }
+
+            let record = historyStore.record(for: promo.id)
+            guard !record.isPermanentlyDismissed, record.isEligible(asOf: currentDate) else { continue }
+            guard promo.isEligible else { continue }
+
+            performShow(promo: promo, record: record, isRestore: false)
         }
     }
 
