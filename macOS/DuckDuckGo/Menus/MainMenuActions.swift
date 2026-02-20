@@ -1469,8 +1469,8 @@ extension MainViewController {
         persistor.continueSetUpCardsLastDemonstrated = (persistor.continueSetUpCardsLastDemonstrated ?? Date()).addingTimeInterval(-.day)
         NSApp.delegateTyped.appearancePreferences.continueSetUpCardsViewDidAppear()
         Task { @MainActor in
-            let promoService = NSApp.delegateTyped.promoService
-            promoService?.debugSimulatedDate = (promoService?.debugSimulatedDate ?? Date()).addingTimeInterval(.day)
+            guard let promoService = NSApp.delegateTyped.promoService else { return }
+            promoService.debugSimulatedDate = (promoService.debugSimulatedDate ?? Date()).addingTimeInterval(.day)
         }
         NotificationCenter.default.post(name: .newTabPageWebViewDidAppear, object: nil)
     }

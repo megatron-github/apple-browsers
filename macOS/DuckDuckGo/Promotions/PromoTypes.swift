@@ -85,6 +85,21 @@ struct PromoType {
     }
 }
 
+/// Defines the relative priority of each promo.
+/// Promos must be added to this enum (in priority order) to register with `PromoService`.
+enum PromoPriority: Int, Comparable {
+    // Declaration order = priority order (first = highest priority)
+    case nextStepsCards
+    case remoteMessage
+    case defaultBrowserBanner
+    case defaultBrowserPopover
+    case defaultBrowserInactiveModal
+
+    static func < (lhs: PromoPriority, rhs: PromoPriority) -> Bool {
+        lhs.rawValue < rhs.rawValue
+    }
+}
+
 /// Context in which the promo is shown.
 /// Used for determining whether promos collide (i.e. are shown in the same context).
 enum PromoContext {

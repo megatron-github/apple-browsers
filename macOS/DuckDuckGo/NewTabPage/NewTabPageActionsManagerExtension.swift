@@ -19,6 +19,7 @@
 import AIChat
 import AppKit
 import AutoconsentStats
+import FeatureFlags
 import BrowserServicesKit
 import Common
 import DDGSync
@@ -64,8 +65,7 @@ extension NewTabPageActionsManager {
         subscriptionCardPersistor: HomePageSubscriptionCardPersisting,
         duckPlayerPreferences: DuckPlayerPreferencesPersistor,
         syncService: DDGSyncing?,
-        pinningManager: PinningManager,
-        onNextStepsCardsProviderCreated: ((NewTabPageNextStepsCardsProviding) -> Void)? = nil
+        pinningManager: PinningManager
     ) {
         self.init(
             appearancePreferences: appearancePreferences,
@@ -96,8 +96,7 @@ extension NewTabPageActionsManager {
             subscriptionCardPersistor: subscriptionCardPersistor,
             duckPlayerPreferences: duckPlayerPreferences,
             syncService: syncService,
-            pinningManager: pinningManager,
-            onNextStepsCardsProviderCreated: onNextStepsCardsProviderCreated
+            pinningManager: pinningManager
         )
     }
 
@@ -131,8 +130,7 @@ extension NewTabPageActionsManager {
         subscriptionCardPersistor: HomePageSubscriptionCardPersisting,
         duckPlayerPreferences: DuckPlayerPreferencesPersistor,
         syncService: DDGSyncing?,
-        pinningManager: PinningManager,
-        onNextStepsCardsProviderCreated: ((NewTabPageNextStepsCardsProviding) -> Void)? = nil
+        pinningManager: PinningManager
     ) {
         let availabilityProvider = NewTabPageSectionsAvailabilityProvider(featureFlagger: featureFlagger)
         let favoritesPublisher = bookmarkManager.listPublisher.map({ $0?.favoriteBookmarks ?? [] }).eraseToAnyPublisher()
@@ -215,7 +213,10 @@ extension NewTabPageActionsManager {
             duckPlayerPreferences: duckPlayerPreferences,
             syncService: syncService
         )
-        onNextStepsCardsProviderCreated?(nextStepsProvider)
+
+        let isPromoServiceEnabled: () -> Bool = { featureFlagger.isFeatureOn(.ctaQueue) }
+        let promo = NextStepsCardsPromo(provider: nextStepsProvider, isPromoServiceEnabled: isPromoServiceEnabled)
+        NSApp.delegateTyped.promoService.register(promo, priority: .nextStepsCards)
 
         self.init(scriptClients: [
             NewTabPageConfigurationClient(

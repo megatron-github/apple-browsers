@@ -206,8 +206,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         subscriptionCardPersistor: homePageSetUpDependencies.subscriptionCardPersistor,
         duckPlayerPreferences: DuckPlayerPreferencesUserDefaultsPersistor(),
         syncService: syncService,
-        pinningManager: pinningManager,
-        onNextStepsCardsProviderCreated: { [weak self] provider in self?.nextStepsCardsProvider = provider }
+        pinningManager: pinningManager
     )
 
     private(set) lazy var aiChatTabOpener: AIChatTabOpening = AIChatTabOpener(
@@ -237,8 +236,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     let remoteMessagingClient: RemoteMessagingClient!
     let onboardingContextualDialogsManager: ContextualOnboardingDialogTypeProviding & ContextualOnboardingStateUpdater
     let defaultBrowserAndDockPromptService: DefaultBrowserAndDockPromptService
-    private var nextStepsCardsProvider: NewTabPageNextStepsCardsProviding?
     private(set) var promoService: PromoService!
+    private var hasStartedPromoService = false
     private var wasExternalLaunch = false
     private var externalActivationCancellables = Set<AnyCancellable>()
     private lazy var webNotificationClickHandler = WebNotificationClickHandler(tabFinder: windowControllersManager)
@@ -1398,9 +1397,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         defaultBrowserAndDockPromptService.applicationDidBecomeActive()
 
-        if promoService == nil {
-            promoService = makePromoService()
-        }
+        startPromoServiceIfNeeded()
 
         if urlEventHandler.consumeExternalURLFlag() {
             promoService?.notifyExternalActivation()
@@ -2004,18 +2001,6 @@ extension AppDelegate {
 
     @MainActor
     private func makePromoService() -> PromoService {
-        _ = newTabPageCoordinator
-        let isPromoServiceEnabled: () -> Bool = { [weak self] in self?.featureFlagger.isFeatureOn(.ctaQueue) ?? false }
-
-        var promos: [any Promo] = []
-        if let provider = nextStepsCardsProvider {
-            promos.append(NextStepsCardsPromo(provider: provider, isPromoServiceEnabled: isPromoServiceEnabled))
-        }
-        promos.append(RemoteMessagePromo(provider: activeRemoteMessageModel, isPromoServiceEnabled: isPromoServiceEnabled))
-        promos.append(DefaultBrowserPopoverPromo(service: defaultBrowserAndDockPromptService, isPromoServiceEnabled: isPromoServiceEnabled))
-        promos.append(DefaultBrowserBannerPromo(service: defaultBrowserAndDockPromptService, isPromoServiceEnabled: isPromoServiceEnabled))
-        promos.append(DefaultBrowserInactiveModalPromo(service: defaultBrowserAndDockPromptService, isPromoServiceEnabled: isPromoServiceEnabled))
-
         let triggerPublisher = Publishers.Merge(
             NotificationCenter.default.publisher(for: .newTabPageWebViewDidAppear)
                 .map { _ in PromoTrigger.newTabPageAppeared },
@@ -2023,15 +2008,39 @@ extension AppDelegate {
                 .map { _ in PromoTrigger.windowBecameKey }
         ).eraseToAnyPublisher()
 
-        let historyStore = PromoHistoryStore(store: keyValueStore)
-        let isExternalLaunch = wasExternalLaunch
-
         return PromoService(
-            promos: promos,
-            historyStore: historyStore,
-            isExternalLaunch: isExternalLaunch,
+            historyStore: PromoHistoryStore(store: keyValueStore),
+            isExternalLaunch: wasExternalLaunch,
             triggerPublisher: triggerPublisher
         )
+    }
+
+    @MainActor
+    private func startPromoServiceIfNeeded() {
+        guard !hasStartedPromoService else { return }
+        hasStartedPromoService = true
+
+        if promoService == nil {
+            promoService = makePromoService()
+        }
+        _ = newTabPageCoordinator
+
+        let isPromoServiceEnabled: () -> Bool = { [weak self] in self?.featureFlagger.isFeatureOn(.ctaQueue) ?? false }
+
+        promoService.register(
+            RemoteMessagePromo(provider: activeRemoteMessageModel, isPromoServiceEnabled: isPromoServiceEnabled),
+            priority: .remoteMessage)
+        promoService.register(
+            DefaultBrowserBannerPromo(service: defaultBrowserAndDockPromptService, isPromoServiceEnabled: isPromoServiceEnabled),
+            priority: .defaultBrowserBanner)
+        promoService.register(
+            DefaultBrowserPopoverPromo(service: defaultBrowserAndDockPromptService, isPromoServiceEnabled: isPromoServiceEnabled),
+            priority: .defaultBrowserPopover)
+        promoService.register(
+            DefaultBrowserInactiveModalPromo(service: defaultBrowserAndDockPromptService, isPromoServiceEnabled: isPromoServiceEnabled),
+            priority: .defaultBrowserInactiveModal)
+
+        promoService.start()
     }
 }
 

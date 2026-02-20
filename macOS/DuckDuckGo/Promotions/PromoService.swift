@@ -18,6 +18,7 @@
 
 import Combine
 import Foundation
+import os.log
 
 /// Tracks state for a promo that is currently being shown.
 struct ActiveShowSession {
@@ -103,8 +104,11 @@ final class PromoService {
 
     private static let externalActivationWindow: TimeInterval = 5.0
 
-    private let promos: [any Promo]
+    private var registeredPromos: [(promo: any Promo, priority: PromoPriority)] = []
+    private var promos: [any Promo] = []
+    private var isStarted = false
     private let historyStore: PromoHistoryStoring
+    private let triggerPublisher: AnyPublisher<PromoTrigger, Never>
 
     private var isExternallyActivated = false
     private var externalActivationClearTask: Task<Void, Never>?
@@ -122,18 +126,44 @@ final class PromoService {
     // MARK: - Init
 
     init(
-        promos: [any Promo],
         historyStore: PromoHistoryStoring,
         isExternalLaunch: Bool,
         triggerPublisher: AnyPublisher<PromoTrigger, Never>
     ) {
-        self.promos = promos
         self.historyStore = historyStore
+        self.triggerPublisher = triggerPublisher
         self.visiblePromoIds = CurrentValueSubject([])
 
         if isExternalLaunch {
             notifyExternalActivation()
         }
+
+        visiblePromoIds
+            .dropFirst()
+            .sink { [weak self] ids in
+                self?.historyStore.saveVisiblePromoIds(ids)
+            }
+            .store(in: &cancellables)
+    }
+
+    /// Registers a promo with the given priority. Must be called before `start()`.
+    func register(_ promo: any Promo, priority: PromoPriority) {
+        assert(!isStarted, "register() called after start()")
+        guard !isStarted else {
+            Logger.general.warning("PromoService: late registration of \(promo.id) ignored")
+            return
+        }
+        registeredPromos.append((promo, priority))
+    }
+
+    /// Locks registration and begins listening to triggers. Call after all promos are registered.
+    func start() {
+        guard !isStarted else { return }
+        isStarted = true
+        promos = registeredPromos
+            .sorted { $0.priority < $1.priority }
+            .map(\.promo)
+        registeredPromos = []
 
         triggerPublisher
             .receive(on: evaluationQueue)
@@ -141,13 +171,6 @@ final class PromoService {
                 Task { @MainActor in
                     await self?.evaluateTrigger(trigger)
                 }
-            }
-            .store(in: &cancellables)
-
-        visiblePromoIds
-            .dropFirst()
-            .sink { [weak self] ids in
-                self?.historyStore.saveVisiblePromoIds(ids)
             }
             .store(in: &cancellables)
 
