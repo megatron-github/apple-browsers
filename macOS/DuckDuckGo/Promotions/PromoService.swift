@@ -103,10 +103,17 @@ final class PromoService {
     // MARK: - Internal state
 
     private static let externalActivationWindow: TimeInterval = 5.0
+    /// Grace period after start() during which promos (e.g. NextStepsCardsPromo) can still register before evaluation begins.
+    private static let registrationGracePeriod: TimeInterval = 3.0
 
     private var registeredPromos: [(promo: any Promo, priority: PromoPriority)] = []
-    private var promos: [any Promo] = []
+    /// Promos in priority order. Derived from registeredPromos (all registered before the grace period ends).
+    private var promos: [any Promo] {
+        registeredPromos.sorted { $0.priority < $1.priority }.map(\.promo)
+    }
     private var isStarted = false
+    /// After the grace period, registration is locked and trigger evaluation begins.
+    private var isRegistrationLocked = false
     private let historyStore: PromoHistoryStoring
     private let triggerPublisher: AnyPublisher<PromoTrigger, Never>
 
@@ -146,35 +153,38 @@ final class PromoService {
             .store(in: &cancellables)
     }
 
-    /// Registers a promo with the given priority. Must be called before `start()`.
+    /// Registers a promo with the given priority. Must be called before the registration grace period ends (see start()).
     func register(_ promo: any Promo, priority: PromoPriority) {
-        assert(!isStarted, "register() called after start()")
-        guard !isStarted else {
-            Logger.general.warning("PromoService: late registration of \(promo.id) ignored")
+        guard !isRegistrationLocked else {
+            Logger.general.warning("PromoService: registration locked, ignoring \(promo.id)")
             return
         }
         registeredPromos.append((promo, priority))
     }
 
-    /// Locks registration and begins listening to triggers. Call after all promos are registered.
+    /// Schedules trigger evaluation to begin after a short grace period, so promos that register late (e.g. NextStepsCardsPromo) are included.
+    /// During the grace period, register() may still be called. After it, registration is locked and evaluation begins.
     func start() {
         guard !isStarted else { return }
         isStarted = true
-        promos = registeredPromos
-            .sorted { $0.priority < $1.priority }
-            .map(\.promo)
-        registeredPromos = []
 
-        triggerPublisher
-            .receive(on: evaluationQueue)
-            .sink { [weak self] trigger in
-                Task { @MainActor in
-                    await self?.evaluateTrigger(trigger)
+        Task { @MainActor [weak self] in
+            guard let self else { return }
+            try? await Task.sleep(nanoseconds: UInt64(Self.registrationGracePeriod * 1_000_000_000))
+            guard !Task.isCancelled else { return }
+            self.isRegistrationLocked = true
+
+            self.triggerPublisher
+                .receive(on: self.evaluationQueue)
+                .sink { [weak self] trigger in
+                    Task { @MainActor in
+                        await self?.evaluateTrigger(trigger)
+                    }
                 }
-            }
-            .store(in: &cancellables)
+                .store(in: &self.cancellables)
 
-        restoreVisiblePromos()
+            self.restoreVisiblePromos()
+        }
     }
 
     // MARK: - Restore on restart

@@ -216,7 +216,7 @@ extension NewTabPageActionsManager {
 
         let isPromoServiceEnabled: () -> Bool = { featureFlagger.isFeatureOn(.ctaQueue) }
         let promo = NextStepsCardsPromo(provider: nextStepsProvider, isPromoServiceEnabled: isPromoServiceEnabled)
-        NSApp.delegateTyped.promoService.register(promo, priority: .nextStepsCards)
+        NSApp.delegateTyped.promoService?.register(promo, priority: .nextStepsCards)
 
         self.init(scriptClients: [
             NewTabPageConfigurationClient(

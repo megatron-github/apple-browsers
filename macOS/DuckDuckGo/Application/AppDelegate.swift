@@ -236,7 +236,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     let remoteMessagingClient: RemoteMessagingClient!
     let onboardingContextualDialogsManager: ContextualOnboardingDialogTypeProviding & ContextualOnboardingStateUpdater
     let defaultBrowserAndDockPromptService: DefaultBrowserAndDockPromptService
-    private(set) var promoService: PromoService!
+    private(set) var promoService: PromoService?
     private var hasStartedPromoService = false
     private var wasExternalLaunch = false
     private var externalActivationCancellables = Set<AnyCancellable>()
@@ -1233,10 +1233,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let urlEventHandlerResult = urlEventHandler.applicationDidFinishLaunching()
         wasExternalLaunch = urlEventHandlerResult.willOpenWindows
 
+        MainActor.assumeIsolated {
+            promoService = makePromoService()
+        }
+
         NotificationCenter.default.publisher(for: .externalURLHandled)
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
-                self?.promoService?.notifyExternalActivation()
+                (self?.promoService)?.notifyExternalActivation()
             }
             .store(in: &externalActivationCancellables)
 
@@ -2018,11 +2022,9 @@ extension AppDelegate {
     @MainActor
     private func startPromoServiceIfNeeded() {
         guard !hasStartedPromoService else { return }
+        guard let promoService else { return }
         hasStartedPromoService = true
 
-        if promoService == nil {
-            promoService = makePromoService()
-        }
         _ = newTabPageCoordinator
 
         let isPromoServiceEnabled: () -> Bool = { [weak self] in self?.featureFlagger.isFeatureOn(.ctaQueue) ?? false }
