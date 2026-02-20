@@ -218,6 +218,7 @@ final class PromoService {
     // MARK: - Step 1: Rules
 
     private func checkRules(for promo: any Promo) -> Bool {
+        if promo.promoType.severity == .low { return true }
         if isExternallyActivated { return false }
 
         let visibleIds = visiblePromoIds.value
