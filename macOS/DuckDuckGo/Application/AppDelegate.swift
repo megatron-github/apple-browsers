@@ -902,7 +902,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                                                                                 notificationPresenter: notificationPresenter,
                                                                                 isOnboardingCompletedProvider: { onboardingManager.state == .onboardingCompleted },
                                                                                 uiProvidersProvider: { NSApp.keyWindow?.contentViewController as? DefaultBrowserPromptUIProvidersProviding },
-                                                                                isPromoServiceEnabled: { true })
+                                                                                isPromoServiceEnabled: { featureFlagger.isFeatureOn(.ctaQueue) })
 
         if AppVersion.runType.requiresEnvironment {
             remoteMessagingClient = RemoteMessagingClient(
