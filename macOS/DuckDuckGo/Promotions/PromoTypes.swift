@@ -18,6 +18,7 @@
 
 import Foundation
 
+/// Trigger notifications for showing a promo.
 enum PromoTrigger {
     case appLaunched
     case windowBecameKey
@@ -25,11 +26,15 @@ enum PromoTrigger {
     case itemBookmarked
 }
 
+/// How a promo is initiated.
 enum PromoInitiated {
+    /// Promo is initiated by the app
     case app
+
+    /// Promo is initiated by a user action
     case user
 
-    /// Defines the minimum hours between showing promos of this initiation type
+    /// Defines the minimum hours between showing promos of this initiation type ("global cooldown")
     var cooldownHours: Int {
         switch self {
         case .app: return 24
@@ -38,9 +43,24 @@ enum PromoInitiated {
     }
 }
 
+/// The "interruption level" of a promo.
 enum PromoSeverity: Comparable {
+    /// Low interruption level:
+    /// - Doesn't get in the way of another action
+    /// - Minimal distraction from the current task
+    /// - Example: Highlighting a button via animation
     case low
+
+    /// Medium interruption level:
+    /// - May get in the way of another action
+    /// - Some distraction from current task
+    /// - Example: An arrow Tip highlighting a feature
     case medium
+
+    /// High interruption level:
+    /// - Does get in the way of another action
+    /// - Distracts or blocks current task
+    /// - Example: Set as Default dialog prompt that doesn't prevent page action
     case high
 }
 
@@ -65,12 +85,22 @@ struct PromoType {
     }
 }
 
+/// Context in which the promo is shown.
+/// Used for determining whether promos collide (i.e. are shown in the same context).
 enum PromoContext {
+    /// Shown globally, e.g. on the address/navigation bar or as a modal.
+    /// Global is mutually exclusive with all other contexts.
     case global
+
+    /// Shown only on the New Tab Page
     case newTabPage
+
+    /// Shown only on a web page (i.e. not the New Tab Page)
     case webPage
 }
 
+/// Result recorded when a promo is dismissed or retracted.
+/// Determines whether the promo is eligible to be shown again on the next trigger, and if so, after what interval (cooldown).
 enum PromoResult {
     /// User engaged with the CTA. Permanently dismissed.
     case actioned
