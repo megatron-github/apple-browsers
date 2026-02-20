@@ -163,6 +163,7 @@ final class PromoService {
 
         for promoId in persistedIds {
             guard let promo = promos.first(where: { $0.id == promoId }) else { continue }
+            promo.refreshEligibility()
             let record = historyStore.record(for: promoId)
             guard !record.isPermanentlyDismissed, record.isEligible(asOf: currentDate) else { continue }
             guard promo.isEligible else { continue }
@@ -175,6 +176,7 @@ final class PromoService {
 
     private func evaluateTrigger(_ trigger: PromoTrigger) async {
         let matchingPromos = promos.filter { $0.triggers.contains(trigger) }
+        matchingPromos.forEach { $0.refreshEligibility() }
 
         for promo in matchingPromos {
             let passesRules = checkRules(for: promo)

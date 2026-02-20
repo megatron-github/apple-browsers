@@ -67,10 +67,15 @@ protocol Promo: AnyObject {
     /// already hidden its own UI will receive a second hide() that should be a no-op.
     @MainActor
     func hide()
+
+    /// Called by PromoService before reading `isEligible` to give the promo
+    /// a chance to recompute its eligibility state. Default: no-op.
+    func refreshEligibility()
 }
 
 extension Promo {
     var coexistingPromoIDs: Set<String> { [] }
     var respectsGlobalCooldown: Bool { true }
     var setsGlobalCooldown: Bool { true }
+    func refreshEligibility() { }
 }

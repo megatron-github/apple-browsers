@@ -98,4 +98,8 @@ final class DefaultBrowserBannerPromo: Promo {
         showContinuation?.resume(returning: .none)
         showContinuation = nil
     }
+
+    func refreshEligibility() {
+        coordinator.evaluateEligibility()
+    }
 }
