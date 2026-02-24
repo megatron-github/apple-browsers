@@ -37,6 +37,10 @@ extension DebugScreensViewModel {
             .action(title: "Reset Autoconsent Prompt", { _ in
                 AppUserDefaults().clearAutoconsentUserSetting()
             }),
+            .action(title: "Clear CPM Per-URL Stats", { _ in
+                AutoconsentPerURLStatsStore.shared.clearAllStats()
+                ActionMessageView.present(message: "CPM Per-URL Stats Cleared")
+            }),
             .action(title: "Reset Sync Promos", { d in
                 let syncPromoPresenter = SyncPromoManager(syncService: d.syncService)
                 syncPromoPresenter.resetPromos()
@@ -74,6 +78,9 @@ extension DebugScreensViewModel {
             // MARK: SwiftUI Views
             .view(title: "AI Chat", { _ in
                 AIChatDebugView()
+            }),
+            .view(title: "CPM Per-URL Stats", { _ in
+                AutoconsentStatsDebugView()
             }),
             .view(title: "Data Audit", { _ in
                 DataAuditDebugScreen()

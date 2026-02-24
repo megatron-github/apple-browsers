@@ -73,10 +73,13 @@ final class AutoconsentUserScript: NSObject, WKScriptMessageHandlerWithReply, Us
         popupManagedSubject.eraseToAnyPublisher()
     }
 
+    private let perURLStatsStore: AutoconsentPerURLStatsStoring
+
     init(config: PrivacyConfiguration,
          preferences: AutoconsentPreferences = AppUserDefaults(),
          ignoreNonHTTPURLs: Bool = true,
-         webExtensionAvailability: WebExtensionAvailabilityProviding? = nil) {
+         webExtensionAvailability: WebExtensionAvailabilityProviding? = nil,
+         perURLStatsStore: AutoconsentPerURLStatsStoring = AutoconsentPerURLStatsStore.shared) {
         Logger.autoconsent.debug("Initialising autoconsent userscript")
         do {
             source = try Self.loadJS("autoconsent-bundle", from: .main, withReplacements: [:])
@@ -90,6 +93,7 @@ final class AutoconsentUserScript: NSObject, WKScriptMessageHandlerWithReply, Us
         self.preferences = preferences
         self.ignoreNonHTTPURLs = ignoreNonHTTPURLs
         self.webExtensionAvailability = webExtensionAvailability
+        self.perURLStatsStore = perURLStatsStore
         super.init()
     }
 
@@ -180,6 +184,8 @@ extension AutoconsentUserScript {
         let cmp: String
         let url: String
         let isCosmetic: Bool
+        let duration: Double // time in milliseconds
+        let totalClicks: Int
     }
 
     struct AutoconsentReportState: Codable {
@@ -399,6 +405,17 @@ extension AutoconsentUserScript {
 
         // Emit event through publisher
         popupManagedSubject.send(messageData)
+
+        // Record per-URL stats for debug feature (user script doesn't provide clicks/duration)
+        let entry = AutoconsentPerURLStatEntry(
+            url: url,
+            host: host,
+            cmpName: messageData.cmp,
+            isCosmetic: messageData.isCosmetic,
+            totalClicks: messageData.totalClicks,
+            duration: messageData.duration
+        )
+        perURLStatsStore.recordEntry(entry)
 
         // remember that we did it for this site
         management.sitesNotifiedCache.insert(host)

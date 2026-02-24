@@ -25,6 +25,12 @@ import os.log
 @available(iOS 18.4, *)
 final class IOSAutoconsentMessageHandlerDelegate: AutoconsentMessageHandlerDelegate {
 
+    private let statsStore: AutoconsentPerURLStatsStoring
+
+    init(statsStore: AutoconsentPerURLStatsStoring = AutoconsentPerURLStatsStore.shared) {
+        self.statsStore = statsStore
+    }
+
     func showCookiePopupAnimation(topUrl: URL, isCosmetic: Bool) {
         NotificationCenter.default.post(
             name: .newSiteCookiesManaged,
@@ -50,6 +56,20 @@ final class IOSAutoconsentMessageHandlerDelegate: AutoconsentMessageHandlerDeleg
 
     func handleCookiePopup(_ popupInfo: CookiePopupHandledInfo) {
         Logger.webExtensions.debug("iOS: Cookie popup handled for \(popupInfo.url.absoluteString)")
+
+        let message = popupInfo.message
+        let url = popupInfo.url
+        guard let host = url.host else { return }
+
+        let entry = AutoconsentPerURLStatEntry(
+            url: url,
+            host: host,
+            cmpName: message["cmp"] as? String ?? "unknown",
+            isCosmetic: message["isCosmetic"] as? Bool ?? false,
+            totalClicks: message["totalClicks"] as? Int ?? 0,
+            duration: message["duration"] as? TimeInterval ?? 0
+        )
+        statsStore.recordEntry(entry)
     }
 
     func sendPixel(_ pixelInfo: PixelInfo) {
