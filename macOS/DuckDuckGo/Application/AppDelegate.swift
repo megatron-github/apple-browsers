@@ -219,6 +219,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     let privacyStats: PrivacyStatsCollecting
     let autoconsentStats: AutoconsentStatsCollecting
+    let autoconsentPerURLStatsStore: AutoconsentPerURLStatsStoring
     private var autoconsentEventCoordinator: AutoconsentEventCoordinator?
     let activeRemoteMessageModel: ActiveRemoteMessageModel
     let newTabPageCustomizationModel: NewTabPageCustomizationModel
@@ -1001,8 +1002,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         privacyStats = PrivacyStats(databaseProvider: PrivacyStatsDatabase())
 #endif
         autoconsentStats = AutoconsentStats(keyValueStore: keyValueStore)
+        autoconsentPerURLStatsStore = AutoconsentPerURLStatsStore()
         autoconsentEventCoordinator = Self.makeAutoconsentEventCoordinator(
             autoconsentStats: autoconsentStats,
+            perURLStatsStore: autoconsentPerURLStatsStore,
             historyCoordinating: historyCoordinator,
             webExtensionAvailability: webExtensionAvailability
         )
@@ -2158,11 +2161,13 @@ extension AppDelegate: UserScriptDependenciesProviding {
 
     private static func makeAutoconsentEventCoordinator(
         autoconsentStats: AutoconsentStatsCollecting,
+        perURLStatsStore: AutoconsentPerURLStatsStoring,
         historyCoordinating: HistoryCoordinating,
         webExtensionAvailability: WebExtensionAvailabilityProviding
     ) -> AutoconsentEventCoordinator {
         return AutoconsentEventCoordinator(
             autoconsentStats: autoconsentStats,
+            perURLStatsStore: perURLStatsStore,
             historyCoordinating: historyCoordinating,
             webExtensionAvailability: webExtensionAvailability
         )

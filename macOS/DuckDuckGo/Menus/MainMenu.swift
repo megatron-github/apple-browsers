@@ -757,6 +757,9 @@ final class MainMenu: NSMenu {
                 NSMenuItem(title: "Clear blockedCookiesPopoverSeen flag", action: #selector(AppDelegate.debugClearBlockedCookiesPopoverSeenFlag))
                 NSMenuItem(title: "Reset widgetNewLabelFirstShownDate", action: #selector(AppDelegate.debugResetWidgetNewLabelFirstShownDateKey))
                 NSMenuItem(title: "Set widgetNewLabelFirstShownDate to 10 days ago", action: #selector(AppDelegate.debugSetWidgetNewLabelFirstShownDateTo10DaysAgo))
+                NSMenuItem.separator()
+                NSMenuItem(title: "Show Per-URL Stats", action: #selector(AppDelegate.showAutoconsentPerURLStats))
+                NSMenuItem(title: "Clear Per-URL Stats", action: #selector(AppDelegate.clearAutoconsentPerURLStats))
             }
             NSMenuItem(title: "History")
                 .submenu(HistoryDebugMenu(historyCoordinator: historyCoordinator, featureFlagger: featureFlagger))

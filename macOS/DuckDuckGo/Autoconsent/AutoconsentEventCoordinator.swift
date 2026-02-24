@@ -28,14 +28,17 @@ final class AutoconsentEventCoordinator {
 
     private var cancellables = Set<AnyCancellable>()
     private let autoconsentStats: AutoconsentStatsCollecting
+    private let perURLStatsStore: AutoconsentPerURLStatsStoring
     private let historyCoordinating: HistoryCoordinating
     private let webExtensionAvailability: WebExtensionAvailabilityProviding
 
     init(autoconsentStats: AutoconsentStatsCollecting,
+         perURLStatsStore: AutoconsentPerURLStatsStoring,
          historyCoordinating: HistoryCoordinating,
          webExtensionAvailability: WebExtensionAvailabilityProviding) {
 
         self.autoconsentStats = autoconsentStats
+        self.perURLStatsStore = perURLStatsStore
         self.historyCoordinating = historyCoordinating
         self.webExtensionAvailability = webExtensionAvailability
 
@@ -83,6 +86,7 @@ final class AutoconsentEventCoordinator {
 
     private func processEvent(_ event: AutoconsentPopupManagedEvent) {
         recordStats(from: event)
+        recordPerURLStats(from: event)
         updateHistory(from: event)
     }
 
@@ -94,6 +98,10 @@ final class AutoconsentEventCoordinator {
                 timeSpent: durationInSeconds
             )
         }
+    }
+
+    private func recordPerURLStats(from event: AutoconsentPopupManagedEvent) {
+        perURLStatsStore.recordEvent(event)
     }
 
     private func updateHistory(from event: AutoconsentPopupManagedEvent) {

@@ -607,6 +607,42 @@ extension AppDelegate {
         }
     }
 
+    @MainActor
+    @objc func showAutoconsentPerURLStats(_ sender: Any?) {
+        guard #available(macOS 13.5, *) else { return }
+
+        let store = Application.appDelegate.autoconsentPerURLStatsStore
+        let hostingView = NSHostingView(rootView: AutoconsentStatsDebugView(store: store))
+        hostingView.translatesAutoresizingMaskIntoConstraints = false
+
+        let window = NSWindow(
+            contentRect: NSRect(x: 0, y: 0, width: 1200, height: 600),
+            styleMask: [.titled, .closable, .resizable],
+            backing: .buffered,
+            defer: false
+        )
+        window.center()
+        window.title = "CPM Per-URL Stats"
+        window.contentView = hostingView
+        window.isReleasedWhenClosed = false
+        window.makeKeyAndOrderFront(nil)
+    }
+
+    @MainActor
+    @objc func clearAutoconsentPerURLStats(_ sender: Any?) {
+        let alert = NSAlert()
+        alert.messageText = "Clear All Per-URL Stats?"
+        alert.informativeText = "This will permanently delete all recorded per-URL autoconsent statistics. This action cannot be undone."
+        alert.alertStyle = .warning
+        alert.addButton(withTitle: "Clear All")
+        alert.addButton(withTitle: "Cancel")
+
+        if alert.runModal() == .alertFirstButtonReturn {
+            Application.appDelegate.autoconsentPerURLStatsStore.clearAllStats()
+            print("DEBUG: Cleared all per-URL autoconsent stats")
+        }
+    }
+
     @objc func resetDefaultGrammarChecks(_ sender: Any?) {
         UserDefaultsWrapper.clear(.spellingCheckEnabledOnce)
         UserDefaultsWrapper.clear(.grammarCheckEnabledOnce)
