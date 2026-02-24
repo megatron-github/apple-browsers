@@ -125,6 +125,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var syncFeatureFlagsCancellable: AnyCancellable?
     private var screenLockedCancellable: AnyCancellable?
     private var emailCancellables = Set<AnyCancellable>()
+    private(set) var promoService: PromoService?
+    private var hasStartedPromoService = false
+    private var wasExternalLaunch = false
+    private var externalActivationCancellables = Set<AnyCancellable>()
     var privacyDashboardWindow: NSWindow?
 
     let tabCrashAggregator = TabCrashAggregator()
@@ -1270,6 +1274,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         profilerToken.advance(to: .appDidFinishLaunchingAfterRestoration)
 
         let urlEventHandlerResult = urlEventHandler.applicationDidFinishLaunching()
+        wasExternalLaunch = urlEventHandlerResult.willOpenWindows
+        MainActor.assumeIsolated {
+            promoService = makePromoService()
+        }
+        NotificationCenter.default.publisher(for: .externalURLHandled)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                (self?.promoService)?.notifyExternalActivation()
+            }
+            .store(in: &externalActivationCancellables)
 
         setUpAutoClearHandler()
         BWManager.shared.initCommunication()
@@ -1398,6 +1412,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationDidBecomeActive(_ notification: Notification) {
         guard didFinishLaunching else { return }
+
+        promoService?.deferEvaluation()
+        startPromoServiceIfNeeded()
+        if urlEventHandler.consumeExternalURLFlag() {
+            promoService?.notifyExternalActivation()
+        }
 
         // Fire quit survey return user pixel if the user completed the survey and returned within 8-14 day window
         let quitSurveyPersistor = QuitSurveyUserDefaultsPersistor(keyValueStore: keyValueStore)
@@ -2075,6 +2095,32 @@ extension AppDelegate: UNUserNotificationCenterDelegate {
         }
     }
 
+    @MainActor
+    private func makePromoService() -> PromoService {
+        let triggerPublisher = Publishers.Merge(
+            NotificationCenter.default.publisher(for: .newTabPageWebViewDidAppear)
+                .map { _ in PromoTrigger.newTabPageAppeared },
+            NotificationCenter.default.publisher(for: NSWindow.didBecomeKeyNotification)
+                .map { _ in PromoTrigger.windowBecameKey }
+        ).eraseToAnyPublisher()
+
+        let promos: [Promo] = []
+
+        return PromoService(
+            promos: promos,
+            historyStore: PromoHistoryStore(store: keyValueStore),
+            isExternalLaunch: wasExternalLaunch,
+            triggerPublisher: triggerPublisher
+        )
+    }
+
+    @MainActor
+    private func startPromoServiceIfNeeded() {
+        guard !hasStartedPromoService else { return }
+        guard let promoService else { return }
+        hasStartedPromoService = true
+        promoService.start()
+    }
 }
 
 extension AppDelegate: UserScriptDependenciesProviding {

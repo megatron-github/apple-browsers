@@ -273,6 +273,9 @@ public enum FeatureFlag: String, CaseIterable {
     /// Private Process Name Flag
     /// https://app.asana.com/1/137249556945/project/1211834678943996/task/1213442286513425
     case privateProcessName
+
+    /// Registry link TBD
+    case ctaQueue
 }
 
 extension FeatureFlag: FeatureFlagDescribing {
@@ -302,7 +305,8 @@ extension FeatureFlag: FeatureFlagDescribing {
                 .crashCollectionLimitCallStackTreeDepth,
                 .memoryUsageReporting,
                 .aiChatSidebarResizable,
-                .nextStepsListWidget:
+                .nextStepsListWidget,
+                .ctaQueue:
             true
         default:
             false
@@ -392,7 +396,8 @@ extension FeatureFlag: FeatureFlagDescribing {
                 .supportsSyncChatsDeletion,
                 .aiChatSidebarResizable,
                 .startupMetrics,
-                .privateProcessName:
+                .privateProcessName,
+                .ctaQueue:
             return true
         case .freemiumDBP,
                 .contextualOnboarding,
@@ -564,6 +569,8 @@ extension FeatureFlag: FeatureFlagDescribing {
             return .internalOnly()
         case .privateProcessName:
             return .disabled
+        case .ctaQueue:
+            return .internalOnly()
         }
     }
 }

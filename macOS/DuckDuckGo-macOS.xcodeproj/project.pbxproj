@@ -7,6 +7,18 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A1B2C3D42E5F601100000001 /* PromoTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D42E5F600100000001 /* PromoTypes.swift */; };
+		A1B2C3D42E5F601200000002 /* PromoHistoryRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D42E5F600200000002 /* PromoHistoryRecord.swift */; };
+		A1B2C3D42E5F601300000003 /* Promo.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D42E5F600300000003 /* Promo.swift */; };
+		A1B2C3D42E5F601400000004 /* PromoHistoryProviding.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D42E5F600400000004 /* PromoHistoryProviding.swift */; };
+		A1B2C3D42E5F601500000005 /* PromoHistoryStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D42E5F600600000006 /* PromoHistoryStore.swift */; };
+		A1B2C3D42E5F601600000007 /* PromoService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D42E5F600700000007 /* PromoService.swift */; };
+		CC3967ED2F461D6700AE83F2 /* PromoTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D42E5F600100000001 /* PromoTypes.swift */; };
+		CC3967EE2F461D6B00AE83F2 /* PromoHistoryRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D42E5F600200000002 /* PromoHistoryRecord.swift */; };
+		CC3967EF2F461D7000AE83F2 /* Promo.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D42E5F600300000003 /* Promo.swift */; };
+		CC3967F02F461D7600AE83F2 /* PromoHistoryProviding.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D42E5F600400000004 /* PromoHistoryProviding.swift */; };
+		CC3967F12F461D7B00AE83F2 /* PromoHistoryStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D42E5F600600000006 /* PromoHistoryStore.swift */; };
+		CC3967F22F461D8000AE83F2 /* PromoService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D42E5F600700000007 /* PromoService.swift */; };
 		021EA0802BD2A9D500772C9A /* TabsPreferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = 021EA07F2BD2A9D500772C9A /* TabsPreferences.swift */; };
 		021EA0812BD2A9D500772C9A /* TabsPreferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = 021EA07F2BD2A9D500772C9A /* TabsPreferences.swift */; };
 		021EA0842BD6E01A00772C9A /* TabsPreferencesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 021EA0822BD6DF1B00772C9A /* TabsPreferencesTests.swift */; };
@@ -6505,6 +6517,12 @@
 		F4A6198B283CFFBB007F2080 /* ContentScopeFeatureFlagging.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentScopeFeatureFlagging.swift; sourceTree = "<group>"; };
 		FD23FD2A28816606007F6985 /* AutoconsentMessageProtocolTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AutoconsentMessageProtocolTests.swift; path = UnitTests/Autoconsent/AutoconsentMessageProtocolTests.swift; sourceTree = SOURCE_ROOT; };
 		FD23FD2C2886A81D007F6985 /* AutoconsentManagement.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutoconsentManagement.swift; sourceTree = "<group>"; };
+		A1B2C3D42E5F600100000001 /* PromoTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromoTypes.swift; sourceTree = "<group>"; };
+		A1B2C3D42E5F600200000002 /* PromoHistoryRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromoHistoryRecord.swift; sourceTree = "<group>"; };
+		A1B2C3D42E5F600300000003 /* Promo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Promo.swift; sourceTree = "<group>"; };
+		A1B2C3D42E5F600400000004 /* PromoHistoryProviding.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromoHistoryProviding.swift; sourceTree = "<group>"; };
+		A1B2C3D42E5F600600000006 /* PromoHistoryStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromoHistoryStore.swift; sourceTree = "<group>"; };
+		A1B2C3D42E5F600700000007 /* PromoService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromoService.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -7796,6 +7814,19 @@
 				1DD6A7B62D804B56006AE043 /* PinnedTabsDiscoveryPopover.swift */,
 			);
 			path = View;
+			sourceTree = "<group>";
+		};
+		A1B2C3D42E5F600500000005 /* Promotions */ = {
+			isa = PBXGroup;
+			children = (
+				A1B2C3D42E5F600100000001 /* PromoTypes.swift */,
+				A1B2C3D42E5F600200000002 /* PromoHistoryRecord.swift */,
+				A1B2C3D42E5F600300000003 /* Promo.swift */,
+				A1B2C3D42E5F600400000004 /* PromoHistoryProviding.swift */,
+				A1B2C3D42E5F600600000006 /* PromoHistoryStore.swift */,
+				A1B2C3D42E5F600700000007 /* PromoService.swift */,
+			);
+			path = Promotions;
 			sourceTree = "<group>";
 		};
 		37C3210D2F1E80FC008F4604 /* MemoryUsageTests */ = {
@@ -10193,6 +10224,7 @@
 				1D074B252909A371006E4AC3 /* PasswordManager */,
 				B64C84DB2692D6E80048FEBE /* Permissions */,
 				37BF3F12286D8A4B00BD9014 /* PinnedTabs */,
+				A1B2C3D42E5F600500000005 /* Promotions */,
 				4B0511A2262CAA5A00F6079C /* Preferences */,
 				B6FA893A269C414900588ECD /* PrivacyDashboard */,
 				37C9F78E2CF1C855004D73A1 /* PrivacyStats */,
@@ -14040,6 +14072,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A1B2C3D42E5F601100000001 /* PromoTypes.swift in Sources */,
+				A1B2C3D42E5F601200000002 /* PromoHistoryRecord.swift in Sources */,
+				A1B2C3D42E5F601300000003 /* Promo.swift in Sources */,
+				A1B2C3D42E5F601400000004 /* PromoHistoryProviding.swift in Sources */,
+				A1B2C3D42E5F601500000005 /* PromoHistoryStore.swift in Sources */,
+				A1B2C3D42E5F601600000007 /* PromoService.swift in Sources */,
 				379026D22C650CCD00A089E8 /* UserBackgroundImagesManager.swift in Sources */,
 				4B41EDA82B1543C9001EEDF4 /* PreferencesVPNView.swift in Sources */,
 				F1DA518D2BF607D200CF29FA /* SubscriptionRedirectManager.swift in Sources */,
@@ -16155,6 +16193,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CC3967ED2F461D6700AE83F2 /* PromoTypes.swift in Sources */,
+				CC3967EE2F461D6B00AE83F2 /* PromoHistoryRecord.swift in Sources */,
+				CC3967EF2F461D7000AE83F2 /* Promo.swift in Sources */,
+				CC3967F02F461D7600AE83F2 /* PromoHistoryProviding.swift in Sources */,
+				CC3967F12F461D7B00AE83F2 /* PromoHistoryStore.swift in Sources */,
+				CC3967F22F461D8000AE83F2 /* PromoService.swift in Sources */,
 				EE1886552EB8D7C600A46272 /* NewImportSummaryViewModel.swift in Sources */,
 				379858132D730EFB008773F6 /* DefaultHistoryViewDialogPresenter.swift in Sources */,
 				E274EFF62E1D55D500373C41 /* NewTabPageOmnibarSuggestionsProvider.swift in Sources */,
