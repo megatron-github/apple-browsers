@@ -23,15 +23,13 @@
             },
             {
                 "key": "protectionsState",
-                "type": "string",
-                "description": "Whether protections are enabled for the site",
-                "enum": ["true", "false"]
+                "type": "boolean",
+                "description": "Whether protections are enabled for the site"
             },
             {
                 "key": "upgradedHttps",
-                "type": "string",
-                "description": "Whether the connection was upgraded to HTTPS",
-                "enum": ["true", "false"]
+                "type": "boolean",
+                "description": "Whether the connection was upgraded to HTTPS"
             },
             {
                 "key": "tds",
@@ -55,9 +53,8 @@
             },
             {
                 "key": "gpc",
-                "type": "string",
-                "description": "Whether Global Privacy Control is enabled",
-                "enum": ["true", "false"]
+                "type": "boolean",
+                "description": "Whether Global Privacy Control is enabled"
             },
             {
                 "key": "ampUrl",
@@ -66,9 +63,8 @@
             },
             {
                 "key": "urlParametersRemoved",
-                "type": "string",
-                "description": "Whether URL tracking parameters were removed",
-                "enum": ["true", "false"]
+                "type": "boolean",
+                "description": "Whether URL tracking parameters were removed"
             },
             {
                 "key": "os",
@@ -101,9 +97,8 @@
             },
             {
                 "key": "vpnOn",
-                "type": "string",
-                "description": "Whether VPN is enabled",
-                "enum": ["true", "false"]
+                "type": "boolean",
+                "description": "Whether VPN is enabled"
             },
             {
                 "key": "userRefreshCount",
@@ -163,6 +158,7 @@
             {
                 "key": "lastSentDay",
                 "type": "string",
+                "format": "date",
                 "description": "Last day a report was sent for this site"
             },
             {
@@ -188,9 +184,8 @@
             },
             {
                 "key": "isForceDarkModeEnabled",
-                "type": "string",
-                "description": "Whether force dark mode is enabled. Only sent when value is known.",
-                "enum": ["true", "false"]
+                "type": "boolean",
+                "description": "Whether force dark mode is enabled. Only sent when value is known."
             },
             {
                 "key": "siteType",
@@ -211,9 +206,8 @@
             },
             {
                 "key": "adwallDetection.detected",
-                "type": "string",
-                "description": "Whether an ad wall was detected by the detector",
-                "enum": ["true", "false"]
+                "type": "boolean",
+                "description": "Whether an ad wall was detected by the detector"
             },
             {
                 "key": "adwallDetection.results",
@@ -222,9 +216,8 @@
             },
             {
                 "key": "botDetection.detected",
-                "type": "string",
-                "description": "Whether bot detection was triggered",
-                "enum": ["true", "false"]
+                "type": "boolean",
+                "description": "Whether bot detection was triggered"
             },
             {
                 "key": "botDetection.results",
@@ -233,9 +226,8 @@
             },
             {
                 "key": "fraudDetection.detected",
-                "type": "string",
-                "description": "Whether fraud detection was triggered",
-                "enum": ["true", "false"]
+                "type": "boolean",
+                "description": "Whether fraud detection was triggered"
             },
             {
                 "key": "fraudDetection.results",
@@ -244,9 +236,8 @@
             },
             {
                 "key": "youtubeAds.detected",
-                "type": "string",
-                "description": "Whether YouTube ads were detected",
-                "enum": ["true", "false"]
+                "type": "boolean",
+                "description": "Whether YouTube ads were detected"
             },
             {
                 "key": "youtubeAds.results",
@@ -350,9 +341,8 @@
             },
             {
                 "key": "upgradedHttps",
-                "type": "string",
-                "description": "Whether the connection was upgraded to HTTPS",
-                "enum": ["true", "false"]
+                "type": "boolean",
+                "description": "Whether the connection was upgraded to HTTPS"
             },
             {
                 "key": "tds",
@@ -376,9 +366,8 @@
             },
             {
                 "key": "gpc",
-                "type": "string",
-                "description": "Whether Global Privacy Control is enabled",
-                "enum": ["true", "false"]
+                "type": "boolean",
+                "description": "Whether Global Privacy Control is enabled"
             },
             {
                 "key": "ampUrl",
@@ -387,9 +376,8 @@
             },
             {
                 "key": "urlParametersRemoved",
-                "type": "string",
-                "description": "Whether URL tracking parameters were removed",
-                "enum": ["true", "false"]
+                "type": "boolean",
+                "description": "Whether URL tracking parameters were removed"
             },
             {
                 "key": "os",
@@ -422,9 +410,8 @@
             },
             {
                 "key": "vpnOn",
-                "type": "string",
-                "description": "Whether VPN is enabled",
-                "enum": ["true", "false"]
+                "type": "boolean",
+                "description": "Whether VPN is enabled"
             },
             {
                 "key": "userRefreshCount",
@@ -433,7 +420,7 @@
             },
             {
                 "key": "locale",
-                "type": "string",
+                "pattern": "[a-z][a-z](-[A-Z][A-Z])?",
                 "description": "User locale in JSON format"
             },
             {
@@ -509,9 +496,8 @@
             },
             {
                 "key": "isForceDarkModeEnabled",
-                "type": "string",
-                "description": "Whether force dark mode is enabled. Only sent when value is known.",
-                "enum": ["true", "false"]
+                "type": "boolean",
+                "description": "Whether force dark mode is enabled. Only sent when value is known."
             },
             {
                 "key": "siteType",
@@ -532,9 +518,8 @@
             },
             {
                 "key": "adwallDetection.detected",
-                "type": "string",
-                "description": "Whether an ad wall was detected by the detector",
-                "enum": ["true", "false"]
+                "type": "boolean",
+                "description": "Whether an ad wall was detected by the detector"
             },
             {
                 "key": "adwallDetection.results",
@@ -543,9 +528,8 @@
             },
             {
                 "key": "botDetection.detected",
-                "type": "string",
-                "description": "Whether bot detection was triggered",
-                "enum": ["true", "false"]
+                "type": "boolean",
+                "description": "Whether bot detection was triggered"
             },
             {
                 "key": "botDetection.results",
@@ -554,9 +538,8 @@
             },
             {
                 "key": "fraudDetection.detected",
-                "type": "string",
-                "description": "Whether fraud detection was triggered",
-                "enum": ["true", "false"]
+                "type": "boolean",
+                "description": "Whether fraud detection was triggered"
             },
             {
                 "key": "fraudDetection.results",
@@ -565,9 +548,8 @@
             },
             {
                 "key": "youtubeAds.detected",
-                "type": "string",
-                "description": "Whether YouTube ads were detected",
-                "enum": ["true", "false"]
+                "type": "boolean",
+                "description": "Whether YouTube ads were detected"
             },
             {
                 "key": "youtubeAds.results",
