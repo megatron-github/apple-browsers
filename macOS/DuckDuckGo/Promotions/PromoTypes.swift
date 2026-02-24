@@ -23,7 +23,6 @@ enum PromoTrigger {
     case appLaunched
     case windowBecameKey
     case newTabPageAppeared
-    case itemBookmarked
 }
 
 /// How a promo is initiated.

@@ -38,7 +38,6 @@ final class URLEventHandler {
 
     private var didFinishLaunching = false
     private var urlsToOpen = [URL]()
-    private var didHandleExternalURL = false
 
     init(handler: ((URL) -> Void)? = nil) {
         self.handler = handler ?? Self.openURL
@@ -108,16 +107,8 @@ final class URLEventHandler {
         handleURLs(urls)
     }
 
-    /// Reads and resets the external URL flag. Returns true if an external URL was handled since last consume.
-    func consumeExternalURLFlag() -> Bool {
-        let value = didHandleExternalURL
-        didHandleExternalURL = false
-        return value
-    }
-
     private func handleURLs(_ urls: [URL]) {
         if didFinishLaunching {
-            didHandleExternalURL = true
             NotificationCenter.default.post(name: .externalURLHandled, object: nil)
             urls.forEach {
                 self.handler($0)

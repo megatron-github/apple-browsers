@@ -20,29 +20,28 @@ import Combine
 import Foundation
 import os.log
 
-/// Tracks state for a promo that is currently being shown.
-struct ActiveShowSession {
-    let promoId: String
-    let delegate: any PromoDelegate
-    let promoType: PromoType
+final class PromoService: @unchecked Sendable {
 
-    /// First-write-wins flag. Once true, ignore further results from show(), timeout, or eligibility.
-    var isResultRecorded = false
+    /// Tracks state for a promo that is currently being shown.
+    private struct ActiveShowSession {
+        let promoId: String
+        let delegate: any PromoDelegate
+        let promoType: PromoType
 
-    /// Task that awaits delegate.show() and records the result. Cancelled when session is cleaned up.
-    var showTask: Task<Void, Never>?
+        /// First-write-wins flag. Once true, ignore further results from show(), timeout, or eligibility.
+        var isResultRecorded = false
 
-    /// Task that sleeps for promoType.timeoutInterval. On fire, records timeoutResult if !isResultRecorded.
-    var timeoutTask: Task<Void, Never>?
+        /// Task that awaits delegate.show() and records the result. Cancelled when session is cleaned up.
+        var showTask: Task<Void, Never>?
 
-    /// Subscription to isEligiblePublisher. On false, calls hide() so the promo resumes with its chosen result; the result flows through handleShowResult.
-    var eligibilityCancellable: AnyCancellable?
-}
+        /// Work item that fires after promoType.timeoutInterval. On fire, records timeoutResult if !isResultRecorded.
+        var timeoutWorkItem: DispatchWorkItem?
 
-@MainActor
-final class PromoService {
+        /// Subscription to isEligiblePublisher. On false, calls hide() so the promo resumes with its chosen result; the result flows through recordResultAndCleanup.
+        var eligibilityCancellable: AnyCancellable?
+    }
 
-    // MARK: - Public
+    // MARK: - Public API
 
     /// Currently visible promos.
     var visiblePromosPublisher: AnyPublisher<[Promo], Never> {
@@ -55,80 +54,236 @@ final class PromoService {
 
     /// Manually dismiss a promo by ID.
     func dismiss(promoId: String, result: PromoResult) {
-        if activeSessions[promoId] != nil {
-            recordResultAndCleanup(promoId: promoId, result: result)
-        } else {
-            updateHistoryForDismissedPromo(promoId: promoId, result: result)
+        stateQueue.async { [weak self] in
+            guard let self else { return }
+            if activeSessions[promoId] != nil {
+                recordResultAndCleanup(promoId: promoId, result: result)
+            } else {
+                updateHistoryForDismissedPromo(promoId: promoId, result: result)
+            }
         }
     }
 
     /// Reverse a dismissal. clearHistory resets timesDismissed/lastDismissed as well.
     func undismiss(promoId: String, clearHistory: Bool) {
-        var record = historyStore.record(for: promoId)
-        record.nextEligibleDate = nil
-        if clearHistory {
-            record.timesDismissed = 0
-            record.lastDismissed = nil
+        stateQueue.async { [weak self] in
+            guard let self else { return }
+            var record = historyStore.record(for: promoId)
+            record.nextEligibleDate = nil
+            if clearHistory {
+                record.timesDismissed = 0
+                record.lastDismissed = nil
+            }
+            historyStore.save(record)
         }
-        historyStore.save(record)
+    }
+
+    // MARK: - Debug / Testing
+
+    /// Debug: Set a simulated "now" for cooldown and eligibility checks. In-memory only; does not persist across app launches.
+    func setDebugSimulatedDate(_ date: Date?) {
+        stateQueue.async { [weak self] in
+            self?.debugSimulatedDate = date
+        }
+    }
+
+    /// Clears debug date override and all promo history. For debug reset.
+    func resetDebugState() {
+        stateQueue.async { [weak self] in
+            guard let self else { return }
+            debugSimulatedDate = nil
+            for (_, session) in activeSessions {
+                session.showTask?.cancel()
+                session.timeoutWorkItem?.cancel()
+                session.eligibilityCancellable?.cancel()
+                let delegate = session.delegate
+                // Fire-and-forget: delegate.hide() must run on main; no need to await completion.
+                DispatchQueue.main.async {
+                    delegate.hide()
+                }
+            }
+            activeSessions.removeAll()
+            historyStore.resetAll()
+        }
     }
 
     /// Debug: simulated "now" for cooldown and eligibility checks. Set by debug menus when advancing time.
     /// In-memory only; nil in production.
-    var debugSimulatedDate: Date?
+    private var debugSimulatedDate: Date?
 
-    /// Clears debug date override and all promo history. For debug reset.
-    func resetDebugState() {
-        debugSimulatedDate = nil
-        for (_, session) in activeSessions {
-            session.showTask?.cancel()
-            session.timeoutTask?.cancel()
-            session.eligibilityCancellable?.cancel()
-            session.delegate.hide()
-        }
-        activeSessions.removeAll()
-        visiblePromoIds.send([])
-        historyStore.resetAll()
+    private var currentDate: Date {
+        debugSimulatedDate ?? Date()
     }
 
-    /// Notifies that the app was activated by an external source (e.g. deep link). Suppresses promos for a short window.
-    func notifyExternalActivation() {
-        isExternallyActivated = true
-        externalActivationClearTask?.cancel()
-        externalActivationClearTask = Task { [weak self] in
-            try? await Task.sleep(nanoseconds: UInt64(Self.externalActivationWindow * 1_000_000_000))
-            self?.isExternallyActivated = false
-        }
-    }
+    #if DEBUG
+    /// Test-only accessor for draining the state queue. Use `drainStateQueue()` in tests.
+    var testQueue: DispatchQueue { stateQueue }
+    #endif
 
-    /// Defers trigger evaluation for a short window after app activation, giving the URL event handler time to deliver its Apple Event and set the external activation flag.
-    func deferEvaluation() {
-        isEvaluationDeferred = true
-        deferralTask?.cancel()
-        deferralTask = Task { @MainActor [weak self] in
-            try? await Task.sleep(nanoseconds: UInt64(Self.evaluationDeferralWindow * 1_000_000_000))
-            guard !Task.isCancelled else { return }
-            await self?.processTriggersAfterExternalActivationCheck()
+    /// Starts the service with a short delay, giving the URL event handler time to deliver its Apple Event and set the external activation flag.
+    func applicationDidBecomeActive() {
+        stateQueue.async { [weak self] in
+            self?.deferEvaluation()
+            self?.start()
         }
     }
 
     /// Attaches a delegate to a promo by ID. Call when the delegate object is ready.
     /// If all delegates are ready and start() was already called, completes registration immediately.
     func setDelegate(for promoId: String, delegate: any PromoDelegate) {
-        guard let index = promos.firstIndex(where: { $0.id == promoId }) else {
-            Logger.general.warning("PromoService: unknown promo ID \(promoId)")
-            return
-        }
-        promos[index].delegate = delegate
+        stateQueue.async { [weak self] in
+            guard let self else { return }
+            guard let index = promos.firstIndex(where: { $0.id == promoId }) else {
+                Logger.general.warning("PromoService: unknown promo ID \(promoId)")
+                return
+            }
+            promos[index].delegate = delegate
 
-        if isStarted && !isRegistrationLocked && allDelegatesReady {
-            completeRegistration()
+            if isStarted && !isDelegateRegistrationComplete && allDelegatesReady {
+                completeRegistration()
+            }
+        }
+    }
+
+    // MARK: - Internal State
+
+    // MARK: Delegate registration
+
+    /// After delegate registration completes, evaluation begins.
+    private var isDelegateRegistrationComplete = false
+
+    /// Provides a fallback to proceed with `completeRegistration()` when delegates are not all ready.
+    /// Cancelled if delegates are all set within the timeout.
+    private let registrationTimeout: TimedFlag
+
+    /// True when every promo in promos has a non-nil delegate.
+    private var allDelegatesReady: Bool {
+        promos.allSatisfy { $0.delegate != nil }
+    }
+
+    // MARK: External URL app activation handling
+
+    /// Defers trigger evaluation when set, giving the URL event handler time to deliver its Apple Event and set the external activation flag.
+    private let triggerEvaluationDeferral: TimedFlag
+
+    /// Suppresses all promos when set, preventing promo shows while the user is likely focused on content related to the external activation (e.g. opening a link).
+    private let externalActivationSuppression: TimedFlag
+
+    // MARK: Promos
+
+    /// Fixed list of promos (array order = priority order). Delegates attached via setDelegate(for:delegate:).
+    private var promos: [Promo]
+
+    /// Whether `PromoService` has started evaluating promo triggers and showing eligible promos.
+    private var isStarted = false
+
+    /// Promo history storage.
+    private let historyStore: PromoHistoryStoring
+
+    /// Publisher for promo triggers.
+    private let triggerPublisher: AnyPublisher<PromoTrigger, Never>
+
+    /// Triggers to be evaluated after delegate registration and deferral window ends.
+    private var bufferedTriggers = Set<PromoTrigger>()
+
+    /// Currently visible promos by ID, and their active show sessions
+    private var activeSessions: [String: ActiveShowSession] = [:] {
+        didSet {
+            if activeSessions.keys != oldValue.keys {
+                visiblePromoIds.send(Set(activeSessions.keys))
+            }
+        }
+    }
+
+    /// Currently visible promos by ID. Kept in sync with `activeSessions` and persisted to `historyStore` on change.
+    private let visiblePromoIds: CurrentValueSubject<Set<String>, Never>
+
+    private var cancellables = Set<AnyCancellable>()
+
+    /// Serial queue that protects all mutable state and runs trigger evaluation off the main thread.
+    private let stateQueue: DispatchQueue
+
+    // MARK: - Init
+
+    init(
+        promos: [Promo],
+        historyStore: PromoHistoryStoring,
+        triggerPublisher: AnyPublisher<PromoTrigger, Never>,
+        initialExternalActivation: Bool = false,
+        stateQueue: DispatchQueue = DispatchQueue(label: "com.duckduckgo.promoService.state"),
+        evaluationDeferralWindow: TimeInterval = 0.5,
+        registrationFallbackTimeout: TimeInterval = 1.0,
+        externalActivationWindow: TimeInterval = 5.0
+    ) {
+        self.promos = promos
+        self.historyStore = historyStore
+        self.triggerPublisher = triggerPublisher
+        self.stateQueue = stateQueue
+        self.registrationTimeout = TimedFlag(queue: stateQueue, clearAfter: registrationFallbackTimeout)
+        self.triggerEvaluationDeferral = TimedFlag(queue: stateQueue, clearAfter: evaluationDeferralWindow)
+        self.externalActivationSuppression = TimedFlag(queue: stateQueue, clearAfter: externalActivationWindow)
+        self.visiblePromoIds = CurrentValueSubject([])
+
+        visiblePromoIds
+            .dropFirst()
+            .receive(on: stateQueue)
+            .sink { [weak self] ids in
+                self?.historyStore.saveVisiblePromoIds(ids)
+            }
+            .store(in: &cancellables)
+
+        triggerPublisher
+            .receive(on: stateQueue)
+            .sink { [weak self] trigger in
+                guard let self else { return }
+                if !isDelegateRegistrationComplete || triggerEvaluationDeferral.isSet {
+                    bufferedTriggers.insert(trigger)
+                } else {
+                    evaluateTrigger(trigger)
+                }
+            }
+            .store(in: &cancellables)
+
+        NotificationCenter.default.publisher(for: .externalURLHandled)
+            .receive(on: stateQueue)
+            .sink { [weak self] _ in
+                self?.suppressPromosAfterExternalActivation()
+            }
+            .store(in: &cancellables)
+
+        if initialExternalActivation {
+            stateQueue.async { [weak self] in
+                self?.suppressPromosAfterExternalActivation()
+            }
+        }
+    }
+
+    // MARK: - Lifecycle
+
+    deinit {
+        registrationTimeout.cancel()
+        triggerEvaluationDeferral.cancel()
+        externalActivationSuppression.cancel()
+    }
+
+    /// Suppresses promos for a short window when the app was activated by an external source (e.g. deep link).
+    private func suppressPromosAfterExternalActivation() {
+        dispatchPrecondition(condition: .onQueue(stateQueue))
+        externalActivationSuppression.set()
+    }
+
+    /// Defers trigger evaluation for a short window after app activation, giving the URL event handler time to deliver its Apple Event and set the external activation flag.
+    private func deferEvaluation() {
+        dispatchPrecondition(condition: .onQueue(stateQueue))
+        triggerEvaluationDeferral.set() { [weak self] in
+            self?.processBufferedTriggersIfReady()
         }
     }
 
     /// Begins evaluation. If all delegates are ready, evaluation starts immediately.
     /// Otherwise, starts a fallback timeout (1s) after which evaluation begins with available delegates.
-    func start() {
+    private func start() {
+        dispatchPrecondition(condition: .onQueue(stateQueue))
         guard !isStarted else { return }
         isStarted = true
 
@@ -137,142 +292,39 @@ final class PromoService {
             return
         }
 
-        registrationTimeoutTask = Task { @MainActor [weak self] in
-            try? await Task.sleep(nanoseconds: UInt64(Self.registrationFallbackTimeout * 1_000_000_000))
-            guard !Task.isCancelled else { return }
+        registrationTimeout.set(onClear: { [weak self] in
             self?.completeRegistration()
-        }
-    }
-
-    // MARK: - Internal state
-
-    private static let externalActivationWindow: TimeInterval = 5.0
-    private static let registrationFallbackTimeout: TimeInterval = 1.0
-    /// Grace period after app activation during which trigger evaluation is deferred, giving the URL event handler time to set its external activation flag.
-    private static let evaluationDeferralWindow: TimeInterval = 0.5
-
-    /// Fixed list of promos (array order = priority order). Delegates attached via setDelegate(for:delegate:).
-    private var promos: [Promo]
-    private var isStarted = false
-    /// After registration completes, evaluation begins.
-    private var isRegistrationLocked = false
-    private var registrationTimeoutTask: Task<Void, Never>?
-    private let historyStore: PromoHistoryStoring
-    private let triggerPublisher: AnyPublisher<PromoTrigger, Never>
-
-    /// Suppresses all promos when true. Set by URL event handler on external activation, cleared after a delay.
-    private var isExternallyActivated = false
-    private var externalActivationClearTask: Task<Void, Never>?
-
-    /// Defers trigger evaluation when true, to allow time to receive the Apple URL event.
-    /// Set by URL event handler on activation, cleared after a delay when deferred evaluation runs.
-    private var isEvaluationDeferred = false
-    private var deferralTask: Task<Void, Never>?
-
-    private var activeSessions: [String: ActiveShowSession] = [:]
-    private let visiblePromoIds: CurrentValueSubject<Set<String>, Never>
-    private var cancellables = Set<AnyCancellable>()
-
-    /// Triggers to be evaluated after a delay.
-    private var bufferedTriggers = Set<PromoTrigger>()
-
-    private let evaluationQueue = DispatchQueue(label: "com.duckduckgo.promoService.evaluation")
-
-    private var currentDate: Date {
-        debugSimulatedDate ?? Date()
-    }
-
-    /// True when every promo in promos has a non-nil delegate.
-    private var allDelegatesReady: Bool {
-        promos.allSatisfy { $0.delegate != nil }
-    }
-
-    // MARK: - Init
-
-    init(
-        promos: [Promo],
-        historyStore: PromoHistoryStoring,
-        isExternalLaunch: Bool,
-        triggerPublisher: AnyPublisher<PromoTrigger, Never>
-    ) {
-        self.promos = promos
-        self.historyStore = historyStore
-        self.triggerPublisher = triggerPublisher
-        self.visiblePromoIds = CurrentValueSubject([])
-
-        if isExternalLaunch {
-            notifyExternalActivation()
-        }
-
-        visiblePromoIds
-            .dropFirst()
-            .sink { [weak self] ids in
-                self?.historyStore.saveVisiblePromoIds(ids)
-            }
-            .store(in: &cancellables)
-
-        triggerPublisher
-            .receive(on: evaluationQueue)
-            .sink { [weak self] trigger in
-                Task { @MainActor in
-                    guard let self else { return }
-                    if !self.isRegistrationLocked || self.isEvaluationDeferred {
-                        self.bufferedTriggers.insert(trigger)
-                    } else {
-                        await self.evaluateTrigger(trigger)
-                    }
-                }
-            }
-            .store(in: &cancellables)
+        })
     }
 
     private func completeRegistration() {
-        guard !isRegistrationLocked else { return }
-        isRegistrationLocked = true
-        registrationTimeoutTask?.cancel()
-        registrationTimeoutTask = nil
+        dispatchPrecondition(condition: .onQueue(stateQueue))
+        guard !isDelegateRegistrationComplete else { return }
+        isDelegateRegistrationComplete = true
+        registrationTimeout.cancel()
 
-        processTriggersAfterRegistrationLocks()
         restoreVisiblePromos()
+        processBufferedTriggersIfReady()
     }
 
-    private func processTriggersAfterRegistrationLocks() {
+    private func processBufferedTriggersIfReady() {
+        dispatchPrecondition(condition: .onQueue(stateQueue))
+        guard isDelegateRegistrationComplete, !triggerEvaluationDeferral.isSet else { return }
+
         let buffered = bufferedTriggers
         bufferedTriggers.removeAll()
-        guard !buffered.isEmpty, !isExternallyActivated else { return }
-
-        for promo in promos {
-            guard let delegate = promo.delegate else { continue }
-            guard !promo.triggers.isDisjoint(with: buffered) else { continue }
-
-            delegate.refreshEligibility()
-            let passesRules = checkRules(for: promo)
-            guard passesRules else { continue }
-
-            let record = historyStore.record(for: promo.id)
-            guard !record.isPermanentlyDismissed, record.isEligible(asOf: currentDate) else { continue }
-            guard delegate.isEligible else { continue }
-
-            performShow(promo: promo, delegate: delegate, record: record, isRestore: false)
-        }
-    }
-
-    private func processTriggersAfterExternalActivationCheck() async {
-        isEvaluationDeferred = false
-        let buffered = bufferedTriggers
-        bufferedTriggers.removeAll()
-        guard !buffered.isEmpty else { return }
-        guard !isExternallyActivated else { return }
+        guard !buffered.isEmpty, !externalActivationSuppression.isSet else { return }
 
         for trigger in buffered {
-            await evaluateTrigger(trigger)
+            evaluateTrigger(trigger)
         }
     }
 
-    // MARK: - Restore on restart
+    // MARK: - Trigger Evaluation
 
     private func restoreVisiblePromos() {
-        guard !isExternallyActivated else { return }
+        dispatchPrecondition(condition: .onQueue(stateQueue))
+        guard !externalActivationSuppression.isSet else { return }
         let persistedIds = historyStore.loadVisiblePromoIds()
         guard !persistedIds.isEmpty else { return }
 
@@ -288,9 +340,8 @@ final class PromoService {
         }
     }
 
-    // MARK: - Trigger handling
-
-    private func evaluateTrigger(_ trigger: PromoTrigger) async {
+    private func evaluateTrigger(_ trigger: PromoTrigger) {
+        dispatchPrecondition(condition: .onQueue(stateQueue))
         let matchingPromos = promos.filter { $0.triggers.contains(trigger) }
         matchingPromos.forEach { $0.delegate?.refreshEligibility() }
 
@@ -304,17 +355,15 @@ final class PromoService {
             guard delegate.isEligible else { continue }
 
             performShow(promo: promo, delegate: delegate, record: record, isRestore: false)
-            return
         }
     }
 
-    // MARK: - Step 1: Rules
-
     private func checkRules(for promo: Promo) -> Bool {
+        dispatchPrecondition(condition: .onQueue(stateQueue))
         if promo.promoType.severity == .low { return true }
-        if isExternallyActivated { return false }
+        if externalActivationSuppression.isSet { return false }
 
-        let visibleIds = visiblePromoIds.value
+        let visibleIds = Set(activeSessions.keys)
         let promoId = promo.id
         let severity = promo.promoType.severity
         let context = promo.context
@@ -349,68 +398,70 @@ final class PromoService {
         return true
     }
 
-    // MARK: - Perform show
+    // MARK: - Show / Session Management
 
     private func performShow(promo: Promo, delegate: any PromoDelegate, record: PromoHistoryRecord, isRestore: Bool = false) {
+        dispatchPrecondition(condition: .onQueue(stateQueue))
         let promoId = promo.id
         let recordToUse = record
 
         let eligibilityCancellable = delegate.isEligiblePublisher
             .dropFirst()
+            .receive(on: stateQueue)
             .sink { [weak self] eligible in
                 guard !eligible else { return }
-                Task { @MainActor in
-                    self?.handleEligibilityLost(promoId: promoId)
-                }
+                self?.handleEligibilityLost(promoId: promoId)
             }
 
-        var timeoutTask: Task<Void, Never>?
+        var timeoutWorkItem: DispatchWorkItem?
         if let interval = promo.promoType.timeoutInterval {
-            timeoutTask = Task { [weak self] in
-                try? await Task.sleep(nanoseconds: UInt64(interval * 1_000_000_000))
-                await MainActor.run {
-                    self?.handleTimeout(promoId: promoId)
-                }
+            let workItem = DispatchWorkItem { [weak self] in
+                self?.handleTimeout(promoId: promoId)
             }
+            timeoutWorkItem = workItem
+            stateQueue.asyncAfter(deadline: .now() + interval, execute: workItem)
         }
 
-        let showTask = Task { [weak self] in
+        let showTask = Task { @MainActor [weak self] in
+            guard !Task.isCancelled else { return }
             let result = await delegate.show(history: recordToUse)
-            await MainActor.run {
-                self?.handleShowResult(promoId: promoId, result: result)
+            self?.stateQueue.async { [weak self] in
+                self?.recordResultAndCleanup(promoId: promoId, result: result)
             }
         }
 
-        var session = ActiveShowSession(
+        let session = ActiveShowSession(
             promoId: promoId,
             delegate: delegate,
             promoType: promo.promoType,
             isResultRecorded: false,
             showTask: showTask,
-            timeoutTask: timeoutTask,
+            timeoutWorkItem: timeoutWorkItem,
             eligibilityCancellable: eligibilityCancellable
         )
         activeSessions[promoId] = session
-        visiblePromoIds.send(Set(activeSessions.keys))
     }
 
-    // MARK: - Result handling
-
-    private func handleShowResult(promoId: String, result: PromoResult) {
-        recordResultAndCleanup(promoId: promoId, result: result)
-    }
+    // MARK: - Result Handling
 
     private func handleTimeout(promoId: String) {
+        dispatchPrecondition(condition: .onQueue(stateQueue))
         guard let session = activeSessions[promoId] else { return }
         recordResultAndCleanup(promoId: promoId, result: session.promoType.timeoutResult)
     }
 
     private func handleEligibilityLost(promoId: String) {
+        dispatchPrecondition(condition: .onQueue(stateQueue))
         guard let session = activeSessions[promoId], !session.isResultRecorded else { return }
-        session.delegate.hide()
+        let delegate = session.delegate
+        // Fire-and-forget: delegate.hide() must run on main; no need to await completion.
+        DispatchQueue.main.async {
+            delegate.hide()
+        }
     }
 
     private func recordResultAndCleanup(promoId: String, result: PromoResult) {
+        dispatchPrecondition(condition: .onQueue(stateQueue))
         guard var session = activeSessions[promoId] else { return }
         if session.isResultRecorded { return }
 
@@ -419,49 +470,42 @@ final class PromoService {
 
         session.showTask?.cancel()
         session.showTask = nil
-        session.timeoutTask?.cancel()
-        session.timeoutTask = nil
+        session.timeoutWorkItem?.cancel()
+        session.timeoutWorkItem = nil
         session.eligibilityCancellable?.cancel()
         session.eligibilityCancellable = nil
 
-        switch result {
-        case .actioned, .ignored(cooldown: nil):
-            var record = historyStore.record(for: promoId)
-            record.timesDismissed += 1
-            record.lastDismissed = currentDate
-            record.nextEligibleDate = .distantFuture
-            historyStore.save(record)
-        case .ignored(cooldown: let interval?):
-            var record = historyStore.record(for: promoId)
-            record.timesDismissed += 1
-            record.lastDismissed = currentDate
-            record.nextEligibleDate = currentDate.addingTimeInterval(interval)
-            historyStore.save(record)
-        case .none:
-            break
-        }
+        applyResult(result, toRecordFor: promoId)
 
         activeSessions.removeValue(forKey: promoId)
-        visiblePromoIds.send(Set(activeSessions.keys))
 
-        session.delegate.hide()
+        let delegate = session.delegate
+        // Fire-and-forget: delegate.hide() must run on main; no need to await completion.
+        DispatchQueue.main.async {
+            delegate.hide()
+        }
     }
 
     private func updateHistoryForDismissedPromo(promoId: String, result: PromoResult) {
+        dispatchPrecondition(condition: .onQueue(stateQueue))
+        applyResult(result, toRecordFor: promoId)
+    }
+
+    private func applyResult(_ result: PromoResult, toRecordFor promoId: String) {
+        dispatchPrecondition(condition: .onQueue(stateQueue))
         var record = historyStore.record(for: promoId)
         switch result {
         case .actioned, .ignored(cooldown: nil):
             record.timesDismissed += 1
             record.lastDismissed = currentDate
             record.nextEligibleDate = .distantFuture
-            historyStore.save(record)
         case .ignored(cooldown: let interval?):
             record.timesDismissed += 1
             record.lastDismissed = currentDate
             record.nextEligibleDate = currentDate.addingTimeInterval(interval)
-            historyStore.save(record)
         case .none:
-            break
+            return
         }
+        historyStore.save(record)
     }
 }

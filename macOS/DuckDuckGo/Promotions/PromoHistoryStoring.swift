@@ -1,5 +1,5 @@
 //
-//  PromoHistoryStore.swift
+//  PromoHistoryStoring.swift
 //
 //  Copyright © 2026 DuckDuckGo. All rights reserved.
 //
@@ -22,6 +22,25 @@ import Foundation
 import os.log
 import Persistence
 
+/// Storage for promo history and visible promo IDs.
+///
+/// **Threading contract:** All methods must be called from `PromoService`'s `stateQueue`.
+/// Implementations may assert this via `dispatchPrecondition(condition: .onQueue(stateQueue))`
+/// when the expected queue is provided at initialization.
+protocol PromoHistoryStoring {
+    func record(for promoId: String) -> PromoHistoryRecord
+    func save(_ record: PromoHistoryRecord)
+
+    /// Persists visible promo IDs for restore-on-restart.
+    func saveVisiblePromoIds(_ ids: Set<String>)
+
+    /// Loads persisted visible promo IDs. Returns empty set on failure.
+    func loadVisiblePromoIds() -> Set<String>
+
+    /// Clears all history records and persisted visible promo IDs. For debug reset.
+    func resetAll()
+}
+
 final class PromoHistoryStore: PromoHistoryStoring {
 
     private static let storageKey = "com.duckduckgo.promo.history"
@@ -40,44 +59,35 @@ final class PromoHistoryStore: PromoHistoryStoring {
     }()
 
     private let store: ThrowingKeyValueStoring
+    private let queue: DispatchQueue?
     private var records: [String: PromoHistoryRecord]
-    private let recordsSubject: CurrentValueSubject<[String: PromoHistoryRecord], Never>
 
-    init(store: ThrowingKeyValueStoring) {
+    init(store: ThrowingKeyValueStoring, queue: DispatchQueue?) {
         self.store = store
+        self.queue = queue
         let loaded = Self.load(from: store)
         self.records = loaded
-        self.recordsSubject = CurrentValueSubject(loaded)
+    }
+
+    private func assertOnExpectedQueue() {
+        if let queue {
+            dispatchPrecondition(condition: .onQueue(queue))
+        }
     }
 
     func record(for promoId: String) -> PromoHistoryRecord {
-        records[promoId] ?? PromoHistoryRecord(id: promoId)
+        assertOnExpectedQueue()
+        return records[promoId] ?? PromoHistoryRecord(id: promoId)
     }
 
     func save(_ record: PromoHistoryRecord) {
+        assertOnExpectedQueue()
         records[record.id] = record
         persist()
-        recordsSubject.send(records)
-    }
-
-    func allRecords() -> [PromoHistoryRecord] {
-        Array(records.values)
-    }
-
-    func historyPublisher(for promoId: String) -> AnyPublisher<PromoHistoryRecord?, Never> {
-        recordsSubject
-            .map { $0[promoId] }
-            .removeDuplicates()
-            .eraseToAnyPublisher()
-    }
-
-    var allHistoryPublisher: AnyPublisher<[PromoHistoryRecord], Never> {
-        recordsSubject
-            .map { Array($0.values) }
-            .eraseToAnyPublisher()
     }
 
     func saveVisiblePromoIds(_ ids: Set<String>) {
+        assertOnExpectedQueue()
         do {
             let data = try Self.encoder.encode(Array(ids))
             try store.set(data, forKey: Self.visibleIdsStorageKey)
@@ -87,6 +97,7 @@ final class PromoHistoryStore: PromoHistoryStoring {
     }
 
     func loadVisiblePromoIds() -> Set<String> {
+        assertOnExpectedQueue()
         do {
             guard let data = try store.object(forKey: Self.visibleIdsStorageKey) as? Data else { return [] }
             let array = try Self.decoder.decode([String].self, from: data)
@@ -98,10 +109,10 @@ final class PromoHistoryStore: PromoHistoryStoring {
     }
 
     func resetAll() {
+        assertOnExpectedQueue()
         records = [:]
         persist()
         saveVisiblePromoIds([])
-        recordsSubject.send(records)
     }
 
     private func persist() {
