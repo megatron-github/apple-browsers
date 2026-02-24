@@ -67,7 +67,8 @@ final class IOSAutoconsentMessageHandlerDelegate: AutoconsentMessageHandlerDeleg
             cmpName: message["cmp"] as? String ?? "unknown",
             isCosmetic: message["isCosmetic"] as? Bool ?? false,
             totalClicks: message["totalClicks"] as? Int ?? 0,
-            duration: message["duration"] as? TimeInterval ?? 0
+            duration: message["duration"] as? TimeInterval ?? 0,
+            fromExtension: true
         )
         statsStore.recordEntry(entry)
     }

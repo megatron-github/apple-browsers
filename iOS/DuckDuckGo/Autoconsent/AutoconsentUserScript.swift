@@ -413,7 +413,8 @@ extension AutoconsentUserScript {
             cmpName: messageData.cmp,
             isCosmetic: messageData.isCosmetic,
             totalClicks: messageData.totalClicks,
-            duration: messageData.duration
+            duration: messageData.duration,
+            fromExtension: false
         )
         perURLStatsStore.recordEntry(entry)
 
