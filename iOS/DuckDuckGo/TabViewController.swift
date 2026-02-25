@@ -253,6 +253,15 @@ class TabViewController: UIViewController {
     let userScriptsDependencies: DefaultScriptSourceProvider.Dependencies
     let contentBlockingAssetsPublisher: AnyPublisher<ContentBlockingUpdating.NewContent, Never>
 
+    private lazy var pageLoadStatsCollector: PageLoadStatsCollector = {
+        PageLoadStatsCollector(
+            store: PageLoadStatsStore.shared,
+            webExtensionAvailabilityProvider: { [weak self] in
+                self?.userScriptsDependencies.webExtensionAvailability?.isAutoconsentExtensionAvailable ?? false
+            }
+        )
+    }()
+
     private let daxDialogsDebouncer = Debouncer(mode: .common)
     var pullToRefreshViewAdapter: PullToRefreshViewAdapter?
 
@@ -1733,6 +1742,7 @@ extension TabViewController: WKNavigationDelegate {
         referrerTrimming.onBeginNavigation(to: webView.url)
         adClickAttributionDetection.onStartNavigation(url: webView.url)
         adClickExternalOpenDetector.startNavigation()
+        pageLoadStatsCollector.navigationDidStart(url: webView.url)
     }
 
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
@@ -1766,6 +1776,10 @@ extension TabViewController: WKNavigationDelegate {
 
         // Notify Special Error Page Navigation handler that webview successfully finished loading
         specialErrorPageNavigationHandler.handleWebView(webView, didFinish: navigation)
+
+        Task {
+            await pageLoadStatsCollector.navigationDidFinish(webView: webView)
+        }
     }
 
     /// Fires product telemetry related to the current URL
@@ -2080,6 +2094,7 @@ extension TabViewController: WKNavigationDelegate {
         referrerTrimming.onFailedNavigation()
         urlProvidedBasicAuthCredential = nil
         lastError = error
+        pageLoadStatsCollector.navigationDidFail()
         let error = error as NSError
 
         // Ignore Frame Load Interrupted that will be caused when a download starts

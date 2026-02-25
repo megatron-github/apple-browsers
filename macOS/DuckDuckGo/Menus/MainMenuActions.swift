@@ -639,7 +639,42 @@ extension AppDelegate {
 
         if alert.runModal() == .alertFirstButtonReturn {
             Application.appDelegate.autoconsentPerURLStatsStore.clearAllStats()
-            print("DEBUG: Cleared all per-URL autoconsent stats")
+            Logger.general.debug("DEBUG: Cleared all per-URL autoconsent stats")
+        }
+    }
+
+    @MainActor
+    @objc func showPageLoadStats(_ sender: Any?) {
+        guard #available(macOS 13.5, *) else { return }
+
+        let hostingView = NSHostingView(rootView: PageLoadStatsDebugView())
+        hostingView.translatesAutoresizingMaskIntoConstraints = false
+
+        let window = NSWindow(
+            contentRect: NSRect(x: 0, y: 0, width: 1200, height: 600),
+            styleMask: [.titled, .closable, .resizable],
+            backing: .buffered,
+            defer: false
+        )
+        window.center()
+        window.title = "Page Load Stats"
+        window.contentView = hostingView
+        window.isReleasedWhenClosed = false
+        window.makeKeyAndOrderFront(nil)
+    }
+
+    @MainActor
+    @objc func clearPageLoadStats(_ sender: Any?) {
+        let alert = NSAlert()
+        alert.messageText = "Clear All Page Load Stats?"
+        alert.informativeText = "This will permanently delete all recorded page load statistics. This action cannot be undone."
+        alert.alertStyle = .warning
+        alert.addButton(withTitle: "Clear All")
+        alert.addButton(withTitle: "Cancel")
+
+        if alert.runModal() == .alertFirstButtonReturn {
+            PageLoadStatsStore.shared.clearAllStats()
+            Logger.general.debug("DEBUG: Cleared all page load stats")
         }
     }
 

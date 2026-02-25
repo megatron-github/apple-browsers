@@ -41,6 +41,10 @@ extension DebugScreensViewModel {
                 AutoconsentPerURLStatsStore.shared.clearAllStats()
                 ActionMessageView.present(message: "CPM Per-URL Stats Cleared")
             }),
+            .action(title: "Clear Page Load Stats", { _ in
+                PageLoadStatsStore.shared.clearAllStats()
+                ActionMessageView.present(message: "Page Load Stats Cleared")
+            }),
             .action(title: "Reset Sync Promos", { d in
                 let syncPromoPresenter = SyncPromoManager(syncService: d.syncService)
                 syncPromoPresenter.resetPromos()
@@ -81,6 +85,9 @@ extension DebugScreensViewModel {
             }),
             .view(title: "CPM Per-URL Stats", { _ in
                 AutoconsentStatsDebugView()
+            }),
+            .view(title: "Page Load Stats", { _ in
+                PageLoadStatsDebugView()
             }),
             .view(title: "Data Audit", { _ in
                 DataAuditDebugScreen()

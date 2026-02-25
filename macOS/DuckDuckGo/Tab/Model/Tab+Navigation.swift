@@ -96,6 +96,9 @@ extension Tab: NavigationResponder {
             // New Tab Page
             .weak(nullable: self.newTabPage),
 
+            // Page Load Stats
+            .weak(nullable: self.pageLoadStats),
+
             // should be the last, for Unit Tests navigation events tracking
             .struct(nullable: testsClosureNavigationResponder)
             // !! don‘t add Tab Extensions here !!

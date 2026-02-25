@@ -761,6 +761,10 @@ final class MainMenu: NSMenu {
                 NSMenuItem(title: "Show Per-URL Stats", action: #selector(AppDelegate.showAutoconsentPerURLStats))
                 NSMenuItem(title: "Clear Per-URL Stats", action: #selector(AppDelegate.clearAutoconsentPerURLStats))
             }
+            NSMenuItem(title: "Page Load Stats") {
+                NSMenuItem(title: "Show Page Load Stats", action: #selector(AppDelegate.showPageLoadStats))
+                NSMenuItem(title: "Clear Page Load Stats", action: #selector(AppDelegate.clearPageLoadStats))
+            }
             NSMenuItem(title: "History")
                 .submenu(HistoryDebugMenu(historyCoordinator: historyCoordinator, featureFlagger: featureFlagger))
             NSMenuItem(title: "Performance Tests") {

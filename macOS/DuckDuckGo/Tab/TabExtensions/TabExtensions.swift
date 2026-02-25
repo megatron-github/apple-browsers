@@ -344,6 +344,15 @@ extension TabExtensionsBuilder {
                 internalUserDecider: dependencies.featureFlagger.internalUserDecider
             )
         }
+
+        add {
+            PageLoadStatsTabExtension(
+                webViewPublisher: args.webViewFuture,
+                webExtensionAvailabilityProvider: {
+                     Application.appDelegate.webExtensionAvailability.isAutoconsentExtensionAvailable
+                }
+            )
+        }
     }
 
 }
