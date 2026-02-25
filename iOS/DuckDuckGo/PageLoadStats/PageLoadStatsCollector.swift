@@ -104,7 +104,7 @@ final class PageLoadStatsCollector {
 
     private func collectJSMetrics(webView: WKWebView) async -> PageLoadJSMetrics? {
         do {
-            let result = try await webView.evaluateJavaScript(Self.metricsScript)
+            let result = try await webView.evaluateJavaScript(Self.metricsScript, in: nil, contentWorld: .page)
 
             guard let metrics = result as? [String: Any] else {
                 return nil
