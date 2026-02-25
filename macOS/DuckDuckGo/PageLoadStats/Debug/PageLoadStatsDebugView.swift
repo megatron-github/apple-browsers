@@ -125,11 +125,11 @@ struct PageLoadStatsDebugView: View {
             }
             .width(90)
 
-            TableColumn("CPM") { entry in
+            TableColumn("Web Extensions") { entry in
                 Text(entry.webExtensionCPMEnabled ? "On" : "Off")
                     .foregroundColor(entry.webExtensionCPMEnabled ? .blue : .secondary)
             }
-            .width(50)
+            .width(100)
         }
         .onChange(of: sortOrder) { newOrder in
             viewModel.stats.sort(using: newOrder)
@@ -143,6 +143,12 @@ struct PageLoadStatsDebugView: View {
                     .textSelection(.enabled)
             }
             .width(min: 200, ideal: 300)
+
+            TableColumn("Web Extensions") { summary in
+                Text(summary.webExtensionsEnabled ? "On" : "Off")
+                    .foregroundColor(summary.webExtensionsEnabled ? .blue : .secondary)
+            }
+            .width(min: 100, ideal: 120)
 
             TableColumn("Count", value: \.entryCount) { summary in
                 Text("\(summary.entryCount)")
@@ -158,16 +164,6 @@ struct PageLoadStatsDebugView: View {
                 Text(summary.averageTTFB.map { String(format: "%.0f", $0) } ?? "-")
             }
             .width(min: 70, ideal: 90)
-
-            TableColumn("CPM On", value: \.cpmEnabledCount) { summary in
-                Text("\(summary.cpmEnabledCount)")
-            }
-            .width(min: 60, ideal: 80)
-
-            TableColumn("CPM Off", value: \.cpmDisabledCount) { summary in
-                Text("\(summary.cpmDisabledCount)")
-            }
-            .width(min: 60, ideal: 80)
         }
     }
 

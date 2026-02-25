@@ -21,13 +21,12 @@ import Combine
 
 struct PageLoadHostStatsSummary: Identifiable {
     let host: String
+    let webExtensionsEnabled: Bool
     let entryCount: Int
     let averageLoadDuration: TimeInterval
     let averageTTFB: TimeInterval?
-    let cpmEnabledCount: Int
-    let cpmDisabledCount: Int
 
-    var id: String { host }
+    var id: String { "\(host)_\(webExtensionsEnabled)" }
 }
 
 @available(macOS 13.5, *)
@@ -36,26 +35,29 @@ final class PageLoadStatsDebugViewModel: ObservableObject {
     @Published var stats: [PageLoadStatEntry] = []
 
     var groupedByHost: [PageLoadHostStatsSummary] {
-        let grouped = Dictionary(grouping: stats) { $0.host }
-        return grouped.map { host, entries in
+        let grouped = Dictionary(grouping: stats) { entry in
+            GroupingKey(host: entry.host, webExtensionsEnabled: entry.webExtensionCPMEnabled)
+        }
+        return grouped.map { key, entries in
             let totalLoadDuration = entries.reduce(0) { $0 + $1.loadDuration }
             let averageLoadDuration = entries.isEmpty ? 0 : totalLoadDuration / Double(entries.count)
 
             let ttfbEntries = entries.compactMap { $0.ttfb }
             let averageTTFB: TimeInterval? = ttfbEntries.isEmpty ? nil : ttfbEntries.reduce(0, +) / Double(ttfbEntries.count)
 
-            let cpmEnabled = entries.filter { $0.webExtensionCPMEnabled }.count
-            let cpmDisabled = entries.count - cpmEnabled
-
             return PageLoadHostStatsSummary(
-                host: host,
+                host: key.host,
+                webExtensionsEnabled: key.webExtensionsEnabled,
                 entryCount: entries.count,
                 averageLoadDuration: averageLoadDuration,
-                averageTTFB: averageTTFB,
-                cpmEnabledCount: cpmEnabled,
-                cpmDisabledCount: cpmDisabled
+                averageTTFB: averageTTFB
             )
-        }.sorted { $0.entryCount > $1.entryCount }
+        }.sorted { ($0.host, $0.webExtensionsEnabled ? 0 : 1) < ($1.host, $1.webExtensionsEnabled ? 0 : 1) }
+    }
+
+    private struct GroupingKey: Hashable {
+        let host: String
+        let webExtensionsEnabled: Bool
     }
 
     private let store: PageLoadStatsStoring
