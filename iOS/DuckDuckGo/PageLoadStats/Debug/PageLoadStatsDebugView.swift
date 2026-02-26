@@ -108,7 +108,7 @@ struct PageLoadStatsDebugView: View {
                     Text(String(format: "Load: %.0f ms", entry.loadDuration))
                         .font(.caption)
                     Spacer()
-                    Text(entry.webExtensionCPMEnabled ? "CPM On" : "CPM Off")
+                    Text(entry.webExtensionCPMEnabled ? "Extension" : "UserScript")
                         .font(.caption)
                         .padding(.horizontal, 6)
                         .padding(.vertical, 2)
@@ -139,29 +139,58 @@ struct PageLoadStatsDebugView: View {
 
     private var groupedListView: some View {
         List(viewModel.groupedByHost) { summary in
-            HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(summary.host)
-                        .font(.headline)
-                    Text("\(summary.entryCount) entries")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                    HStack(spacing: 4) {
-                        Text("CPM On: \(summary.cpmEnabledCount)")
-                            .font(.caption2)
-                            .foregroundColor(.blue)
-                        Text("Off: \(summary.cpmDisabledCount)")
-                            .font(.caption2)
-                            .foregroundColor(.gray)
+            VStack(alignment: .leading, spacing: 6) {
+                Text(summary.host)
+                    .font(.headline)
+
+                HStack(spacing: 12) {
+                    if summary.extensionCount > 0 {
+                        HStack(spacing: 4) {
+                            Text("Extension")
+                                .font(.caption)
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 2)
+                                .background(Color.blue.opacity(0.2))
+                                .cornerRadius(4)
+                            Text("\(summary.extensionCount)")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                            Text("•")
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                            Text(String(format: "%.0f ms", summary.extensionAverageLoadDuration))
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+
+                    if summary.userScriptCount > 0 {
+                        HStack(spacing: 4) {
+                            Text("UserScript")
+                                .font(.caption)
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 2)
+                                .background(Color.gray.opacity(0.2))
+                                .cornerRadius(4)
+                            Text("\(summary.userScriptCount)")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                            Text("•")
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                            Text(String(format: "%.0f ms", summary.userScriptAverageLoadDuration))
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
                     }
                 }
-                Spacer()
-                VStack(alignment: .trailing, spacing: 2) {
-                    Text(String(format: "Avg: %.0f ms", summary.averageLoadDuration))
-                        .font(.caption)
+
+                HStack {
+                    Text("\(summary.entryCount) total • Avg: \(String(format: "%.0f ms", summary.averageLoadDuration))")
+                        .font(.caption2)
                         .foregroundColor(.secondary)
                     if let ttfb = summary.averageTTFB {
-                        Text(String(format: "TTFB: %.0f", ttfb))
+                        Text("• TTFB: \(String(format: "%.0f", ttfb))")
                             .font(.caption2)
                             .foregroundColor(.secondary)
                     }

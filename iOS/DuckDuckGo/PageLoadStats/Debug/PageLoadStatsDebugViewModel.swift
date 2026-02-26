@@ -24,8 +24,10 @@ struct PageLoadHostStatsSummary: Identifiable {
     let entryCount: Int
     let averageLoadDuration: TimeInterval
     let averageTTFB: TimeInterval?
-    let cpmEnabledCount: Int
-    let cpmDisabledCount: Int
+    let extensionCount: Int
+    let extensionAverageLoadDuration: TimeInterval
+    let userScriptCount: Int
+    let userScriptAverageLoadDuration: TimeInterval
 
     var id: String { host }
 }
@@ -43,16 +45,23 @@ final class PageLoadStatsDebugViewModel: ObservableObject {
             let ttfbEntries = entries.compactMap { $0.ttfb }
             let averageTTFB: TimeInterval? = ttfbEntries.isEmpty ? nil : ttfbEntries.reduce(0, +) / Double(ttfbEntries.count)
 
-            let cpmEnabled = entries.filter { $0.webExtensionCPMEnabled }.count
-            let cpmDisabled = entries.count - cpmEnabled
+            let extensionEntries = entries.filter { $0.webExtensionCPMEnabled }
+            let extensionTotalDuration = extensionEntries.reduce(0) { $0 + $1.loadDuration }
+            let extensionAvg = extensionEntries.isEmpty ? 0 : extensionTotalDuration / Double(extensionEntries.count)
+
+            let userScriptEntries = entries.filter { !$0.webExtensionCPMEnabled }
+            let userScriptTotalDuration = userScriptEntries.reduce(0) { $0 + $1.loadDuration }
+            let userScriptAvg = userScriptEntries.isEmpty ? 0 : userScriptTotalDuration / Double(userScriptEntries.count)
 
             return PageLoadHostStatsSummary(
                 host: host,
                 entryCount: entries.count,
                 averageLoadDuration: averageLoadDuration,
                 averageTTFB: averageTTFB,
-                cpmEnabledCount: cpmEnabled,
-                cpmDisabledCount: cpmDisabled
+                extensionCount: extensionEntries.count,
+                extensionAverageLoadDuration: extensionAvg,
+                userScriptCount: userScriptEntries.count,
+                userScriptAverageLoadDuration: userScriptAvg
             )
         }.sorted { $0.entryCount > $1.entryCount }
     }
