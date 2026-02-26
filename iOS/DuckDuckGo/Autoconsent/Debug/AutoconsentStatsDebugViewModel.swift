@@ -23,6 +23,10 @@ struct AutoconsentHostStatsSummary: Identifiable {
     let host: String
     let entryCount: Int
     let averageDuration: TimeInterval
+    let extensionCount: Int
+    let extensionAverageDuration: TimeInterval
+    let userScriptCount: Int
+    let userScriptAverageDuration: TimeInterval
 
     var id: String { host }
 }
@@ -36,10 +40,23 @@ final class AutoconsentStatsDebugViewModel: ObservableObject {
         return grouped.map { host, entries in
             let totalDuration = entries.reduce(0) { $0 + $1.duration }
             let averageDuration = entries.isEmpty ? 0 : totalDuration / Double(entries.count)
+
+            let extensionEntries = entries.filter { $0.fromExtension }
+            let extensionTotalDuration = extensionEntries.reduce(0) { $0 + $1.duration }
+            let extensionAvg = extensionEntries.isEmpty ? 0 : extensionTotalDuration / Double(extensionEntries.count)
+
+            let userScriptEntries = entries.filter { !$0.fromExtension }
+            let userScriptTotalDuration = userScriptEntries.reduce(0) { $0 + $1.duration }
+            let userScriptAvg = userScriptEntries.isEmpty ? 0 : userScriptTotalDuration / Double(userScriptEntries.count)
+
             return AutoconsentHostStatsSummary(
                 host: host,
                 entryCount: entries.count,
-                averageDuration: averageDuration
+                averageDuration: averageDuration,
+                extensionCount: extensionEntries.count,
+                extensionAverageDuration: extensionAvg,
+                userScriptCount: userScriptEntries.count,
+                userScriptAverageDuration: userScriptAvg
             )
         }.sorted { $0.entryCount > $1.entryCount }
     }

@@ -140,17 +140,54 @@ struct AutoconsentStatsDebugView: View {
 
     private var groupedListView: some View {
         List(viewModel.groupedByHost) { summary in
-            HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(summary.host)
-                        .font(.headline)
-                    Text("\(summary.entryCount) entries")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+            VStack(alignment: .leading, spacing: 6) {
+                Text(summary.host)
+                    .font(.headline)
+
+                HStack(spacing: 12) {
+                    if summary.extensionCount > 0 {
+                        HStack(spacing: 4) {
+                            Text("Extension")
+                                .font(.caption)
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 2)
+                                .background(Color.blue.opacity(0.2))
+                                .cornerRadius(4)
+                            Text("\(summary.extensionCount)")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                            Text("•")
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                            Text(String(format: "%.0f ms", summary.extensionAverageDuration))
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+
+                    if summary.userScriptCount > 0 {
+                        HStack(spacing: 4) {
+                            Text("UserScript")
+                                .font(.caption)
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 2)
+                                .background(Color.gray.opacity(0.2))
+                                .cornerRadius(4)
+                            Text("\(summary.userScriptCount)")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                            Text("•")
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                            Text(String(format: "%.0f ms", summary.userScriptAverageDuration))
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                    }
                 }
-                Spacer()
-                Text(String(format: "Avg: %.0f ms", summary.averageDuration))
-                    .font(.caption)
+
+                Text("\(summary.entryCount) total • Avg: \(String(format: "%.0f ms", summary.averageDuration))")
+                    .font(.caption2)
                     .foregroundColor(.secondary)
             }
             .padding(.vertical, 4)
