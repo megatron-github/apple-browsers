@@ -22,17 +22,13 @@ import Foundation
 final class MockPromoHistoryStore: PromoHistoryStoring {
 
     private var records: [String: PromoHistoryRecord] = [:]
-    private var visiblePromoIds: Set<String> = []
 
     private(set) var recordCallCount = 0
     private(set) var saveCallCount = 0
-    private(set) var saveVisiblePromoIdsCallCount = 0
-    private(set) var loadVisiblePromoIdsCallCount = 0
     private(set) var resetAllCallCount = 0
 
-    init(records: [String: PromoHistoryRecord] = [:], visiblePromoIds: Set<String> = []) {
+    init(records: [String: PromoHistoryRecord] = [:]) {
         self.records = records
-        self.visiblePromoIds = visiblePromoIds
     }
 
     func record(for promoId: String) -> PromoHistoryRecord {
@@ -45,19 +41,8 @@ final class MockPromoHistoryStore: PromoHistoryStoring {
         records[record.id] = record
     }
 
-    func saveVisiblePromoIds(_ ids: Set<String>) {
-        saveVisiblePromoIdsCallCount += 1
-        visiblePromoIds = ids
-    }
-
-    func loadVisiblePromoIds() -> Set<String> {
-        loadVisiblePromoIdsCallCount += 1
-        return visiblePromoIds
-    }
-
     func resetAll() {
         resetAllCallCount += 1
         records = [:]
-        visiblePromoIds = []
     }
 }

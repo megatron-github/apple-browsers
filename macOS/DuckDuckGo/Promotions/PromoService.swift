@@ -20,7 +20,7 @@ import Combine
 import Foundation
 import os.log
 
-final class PromoService: @unchecked Sendable {
+final class PromoService: @unchecked Sendable, PromoHistoryProviding {
 
     /// Tracks state for a promo that is currently being shown.
     private struct ActiveShowSession {
@@ -64,17 +64,22 @@ final class PromoService: @unchecked Sendable {
         }
     }
 
-    /// Reverse a dismissal. clearHistory resets timesDismissed/lastDismissed as well.
+    /// Reverse a dismissal.
+    /// - clearHistory == false: clears LastDismissed and NextEligible; preserves TimesDismissed, Actioned, LastShown.
+    /// - clearHistory == true: resets all history fields.
     func undismiss(promoId: String, clearHistory: Bool) {
         stateQueue.async { [weak self] in
             guard let self else { return }
             var record = historyStore.record(for: promoId)
             record.nextEligibleDate = nil
+            record.lastDismissed = nil
             if clearHistory {
                 record.timesDismissed = 0
-                record.lastDismissed = nil
+                record.lastShown = nil
+                record.actioned = false
             }
             historyStore.save(record)
+            notifyRecordChanged(for: promoId, record: record)
         }
     }
 
@@ -104,6 +109,7 @@ final class PromoService: @unchecked Sendable {
             }
             activeSessions.removeAll()
             historyStore.resetAll()
+            recordsSubject.send([:])
         }
     }
 
@@ -198,6 +204,9 @@ final class PromoService: @unchecked Sendable {
     /// Currently visible promos by ID. Kept in sync with `activeSessions` and persisted to `historyStore` on change.
     private let visiblePromoIds: CurrentValueSubject<Set<String>, Never>
 
+    /// Snapshot of promo history records for PromoHistoryProviding. Updated on save/reset.
+    private let recordsSubject: CurrentValueSubject<[String: PromoHistoryRecord], Never>
+
     private var cancellables = Set<AnyCancellable>()
 
     /// Serial queue that protects all mutable state and runs trigger evaluation off the main thread.
@@ -223,14 +232,13 @@ final class PromoService: @unchecked Sendable {
         self.triggerEvaluationDeferral = TimedFlag(queue: stateQueue, clearAfter: evaluationDeferralWindow)
         self.externalActivationSuppression = TimedFlag(queue: stateQueue, clearAfter: externalActivationWindow)
         self.visiblePromoIds = CurrentValueSubject([])
-
-        visiblePromoIds
-            .dropFirst()
-            .receive(on: stateQueue)
-            .sink { [weak self] ids in
-                self?.historyStore.saveVisiblePromoIds(ids)
+        var initialSnapshot: [String: PromoHistoryRecord] = [:]
+        stateQueue.sync {
+            for promo in promos {
+                initialSnapshot[promo.id] = historyStore.record(for: promo.id)
             }
-            .store(in: &cancellables)
+        }
+        self.recordsSubject = CurrentValueSubject(initialSnapshot)
 
         triggerPublisher
             .receive(on: stateQueue)
@@ -325,15 +333,17 @@ final class PromoService: @unchecked Sendable {
     private func restoreVisiblePromos() {
         dispatchPrecondition(condition: .onQueue(stateQueue))
         guard !externalActivationSuppression.isSet else { return }
-        let persistedIds = historyStore.loadVisiblePromoIds()
-        guard !persistedIds.isEmpty else { return }
 
-        for promoId in persistedIds {
-            guard let promo = promos.first(where: { $0.id == promoId }),
-                  let delegate = promo.delegate else { continue }
+        for promo in promos {
+            guard let delegate = promo.delegate else { continue }
+            let record = historyStore.record(for: promo.id)
+
+            guard let lastShown = record.lastShown else { continue }
+            let wasVisibleAtShutdown = record.lastDismissed == nil
+                || record.lastDismissed! < lastShown
+            guard wasVisibleAtShutdown else { continue }
+
             delegate.refreshEligibility()
-            let record = historyStore.record(for: promoId)
-            guard !record.isPermanentlyDismissed, record.isEligible(asOf: currentDate) else { continue }
             guard delegate.isEligible else { continue }
 
             performShow(promo: promo, delegate: delegate, record: record, isRestore: true)
@@ -346,6 +356,7 @@ final class PromoService: @unchecked Sendable {
         matchingPromos.forEach { $0.delegate?.refreshEligibility() }
 
         for promo in matchingPromos {
+            guard activeSessions[promo.id] == nil else { continue }
             guard let delegate = promo.delegate else { continue }
             let passesRules = checkRules(for: promo)
             guard passesRules else { continue }
@@ -384,13 +395,11 @@ final class PromoService: @unchecked Sendable {
         }
 
         if promo.respectsGlobalCooldown && severity >= .medium {
-            let cooldownHours = promo.initiated.cooldownHours
-            let cooldownInterval = TimeInterval(cooldownHours * 3600)
             let lastDismissedForType = promos
-                .filter { $0.initiated == promo.initiated && $0.setsGlobalCooldown }
+                .filter { $0.initiated == promo.initiated && $0.setsGlobalCooldown && $0.promoType.severity >= .medium }
                 .compactMap { historyStore.record(for: $0.id).lastDismissed }
                 .max()
-            if let last = lastDismissedForType, currentDate.timeIntervalSince(last) < cooldownInterval {
+            if let last = lastDismissedForType, currentDate.timeIntervalSince(last) < promo.initiated.cooldown {
                 return false
             }
         }
@@ -403,7 +412,10 @@ final class PromoService: @unchecked Sendable {
     private func performShow(promo: Promo, delegate: any PromoDelegate, record: PromoHistoryRecord, isRestore: Bool = false) {
         dispatchPrecondition(condition: .onQueue(stateQueue))
         let promoId = promo.id
-        let recordToUse = record
+        var recordToUse = record
+        recordToUse.lastShown = currentDate
+        historyStore.save(recordToUse)
+        notifyRecordChanged(for: promoId, record: recordToUse)
 
         let eligibilityCancellable = delegate.isEligiblePublisher
             .dropFirst()
@@ -452,12 +464,7 @@ final class PromoService: @unchecked Sendable {
 
     private func handleEligibilityLost(promoId: String) {
         dispatchPrecondition(condition: .onQueue(stateQueue))
-        guard let session = activeSessions[promoId], !session.isResultRecorded else { return }
-        let delegate = session.delegate
-        // Fire-and-forget: delegate.hide() must run on main; no need to await completion.
-        DispatchQueue.main.async {
-            delegate.hide()
-        }
+        recordResultAndCleanup(promoId: promoId, result: .none)
     }
 
     private func recordResultAndCleanup(promoId: String, result: PromoResult) {
@@ -495,7 +502,12 @@ final class PromoService: @unchecked Sendable {
         dispatchPrecondition(condition: .onQueue(stateQueue))
         var record = historyStore.record(for: promoId)
         switch result {
-        case .actioned, .ignored(cooldown: nil):
+        case .actioned:
+            record.timesDismissed += 1
+            record.lastDismissed = currentDate
+            record.nextEligibleDate = .distantFuture
+            record.actioned = true
+        case .ignored(cooldown: nil):
             record.timesDismissed += 1
             record.lastDismissed = currentDate
             record.nextEligibleDate = .distantFuture
@@ -507,5 +519,28 @@ final class PromoService: @unchecked Sendable {
             return
         }
         historyStore.save(record)
+        notifyRecordChanged(for: promoId, record: record)
+    }
+
+    private func notifyRecordChanged(for promoId: String, record: PromoHistoryRecord) {
+        dispatchPrecondition(condition: .onQueue(stateQueue))
+        var snapshot = recordsSubject.value
+        snapshot[promoId] = record
+        recordsSubject.send(snapshot)
+    }
+
+    // MARK: - PromoHistoryProviding
+
+    func historyPublisher(for promoId: String) -> AnyPublisher<PromoHistoryRecord?, Never> {
+        recordsSubject
+            .map { $0[promoId] }
+            .removeDuplicates()
+            .eraseToAnyPublisher()
+    }
+
+    var allHistoryPublisher: AnyPublisher<[PromoHistoryRecord], Never> {
+        recordsSubject
+            .map { Array($0.values) }
+            .eraseToAnyPublisher()
     }
 }

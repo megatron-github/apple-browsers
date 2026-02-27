@@ -22,7 +22,7 @@ import Foundation
 import os.log
 import Persistence
 
-/// Storage for promo history and visible promo IDs.
+/// Storage for promo history.
 ///
 /// **Threading contract:** All methods must be called from `PromoService`'s `stateQueue`.
 /// Implementations may assert this via `dispatchPrecondition(condition: .onQueue(stateQueue))`
@@ -31,20 +31,13 @@ protocol PromoHistoryStoring {
     func record(for promoId: String) -> PromoHistoryRecord
     func save(_ record: PromoHistoryRecord)
 
-    /// Persists visible promo IDs for restore-on-restart.
-    func saveVisiblePromoIds(_ ids: Set<String>)
-
-    /// Loads persisted visible promo IDs. Returns empty set on failure.
-    func loadVisiblePromoIds() -> Set<String>
-
-    /// Clears all history records and persisted visible promo IDs. For debug reset.
+    /// Clears all history records. For debug reset.
     func resetAll()
 }
 
 final class PromoHistoryStore: PromoHistoryStoring {
 
     private static let storageKey = "com.duckduckgo.promo.history"
-    private static let visibleIdsStorageKey = "com.duckduckgo.promo.visibleIds"
 
     private static let encoder: JSONEncoder = {
         let encoder = JSONEncoder()
@@ -86,33 +79,10 @@ final class PromoHistoryStore: PromoHistoryStoring {
         persist()
     }
 
-    func saveVisiblePromoIds(_ ids: Set<String>) {
-        assertOnExpectedQueue()
-        do {
-            let data = try Self.encoder.encode(Array(ids))
-            try store.set(data, forKey: Self.visibleIdsStorageKey)
-        } catch {
-            Logger.general.error("PromoHistoryStore failed to persist visible promo IDs: \(error.localizedDescription)")
-        }
-    }
-
-    func loadVisiblePromoIds() -> Set<String> {
-        assertOnExpectedQueue()
-        do {
-            guard let data = try store.object(forKey: Self.visibleIdsStorageKey) as? Data else { return [] }
-            let array = try Self.decoder.decode([String].self, from: data)
-            return Set(array)
-        } catch {
-            Logger.general.error("PromoHistoryStore failed to load visible promo IDs: \(error.localizedDescription)")
-            return []
-        }
-    }
-
     func resetAll() {
         assertOnExpectedQueue()
         records = [:]
         persist()
-        saveVisiblePromoIds([])
     }
 
     private func persist() {

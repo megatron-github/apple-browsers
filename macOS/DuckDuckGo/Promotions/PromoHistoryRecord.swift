@@ -22,7 +22,9 @@ struct PromoHistoryRecord: Codable, Equatable {
     let id: String
     var timesDismissed: Int
     var lastDismissed: Date?
+    var lastShown: Date?
     var nextEligibleDate: Date?
+    var actioned: Bool
 
     var isPermanentlyDismissed: Bool {
         nextEligibleDate == .distantFuture
@@ -42,6 +44,8 @@ struct PromoHistoryRecord: Codable, Equatable {
         self.id = id
         self.timesDismissed = 0
         self.lastDismissed = nil
+        self.lastShown = nil
         self.nextEligibleDate = nil
+        self.actioned = false
     }
 }

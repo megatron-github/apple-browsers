@@ -44,14 +44,18 @@ final class PromoHistoryStoreTests: XCTestCase {
         XCTAssertEqual(record.id, "unknown-promo")
         XCTAssertEqual(record.timesDismissed, 0)
         XCTAssertNil(record.lastDismissed)
+        XCTAssertNil(record.lastShown)
         XCTAssertNil(record.nextEligibleDate)
+        XCTAssertFalse(record.actioned)
     }
 
     func testWhenSaveRecord_ThenRecordForReturnsSavedRecord() {
         var record = PromoHistoryRecord(id: "test-promo")
         record.timesDismissed = 2
         record.lastDismissed = Date()
+        record.lastShown = Date()
         record.nextEligibleDate = .distantFuture
+        record.actioned = true
 
         store.save(record)
 
@@ -59,7 +63,9 @@ final class PromoHistoryStoreTests: XCTestCase {
         XCTAssertEqual(loaded.id, record.id)
         XCTAssertEqual(loaded.timesDismissed, 2)
         XCTAssertNotNil(loaded.lastDismissed)
+        XCTAssertNotNil(loaded.lastShown)
         XCTAssertEqual(loaded.nextEligibleDate, .distantFuture)
+        XCTAssertTrue(loaded.actioned)
     }
 
     func testWhenSaveRecord_ThenStateRoundTripsCorrectly() {
@@ -68,6 +74,7 @@ final class PromoHistoryStoreTests: XCTestCase {
         let now = Date()
         record.lastDismissed = now
         record.nextEligibleDate = now.addingTimeInterval(86400)
+        record.actioned = true
 
         store.save(record)
 
@@ -76,37 +83,20 @@ final class PromoHistoryStoreTests: XCTestCase {
         XCTAssertEqual(loaded.timesDismissed, 3)
         XCTAssertEqual(try XCTUnwrap(loaded.lastDismissed).timeIntervalSince1970, now.timeIntervalSince1970, accuracy: 1)
         XCTAssertEqual(try XCTUnwrap(loaded.nextEligibleDate).timeIntervalSince1970, try XCTUnwrap(record.nextEligibleDate).timeIntervalSince1970, accuracy: 1)
+        XCTAssertTrue(loaded.actioned)
     }
 
-    func testWhenSaveVisiblePromoIds_ThenLoadVisiblePromoIdsReturnsSameSet() {
-        let ids: Set<String> = ["promo-a", "promo-b", "promo-c"]
-        store.saveVisiblePromoIds(ids)
-
-        let loaded = store.loadVisiblePromoIds()
-        XCTAssertEqual(loaded, ids)
-    }
-
-    func testWhenResetAll_ThenRecordsAndVisibleIdsAreCleared() {
+    func testWhenResetAll_ThenRecordsAreCleared() {
         let record = PromoHistoryRecord(id: "reset-promo")
         store.save(record)
-        store.saveVisiblePromoIds(["reset-promo"])
 
         store.resetAll()
 
         XCTAssertEqual(store.record(for: "reset-promo").timesDismissed, 0)
         XCTAssertNil(store.record(for: "reset-promo").lastDismissed)
+        XCTAssertNil(store.record(for: "reset-promo").lastShown)
         XCTAssertNil(store.record(for: "reset-promo").nextEligibleDate)
-        XCTAssertTrue(store.loadVisiblePromoIds().isEmpty)
-    }
-
-    func testWhenStoreThrowsOnRead_ThenLoadReturnsEmpty() {
-        let throwingStore = InMemoryThrowingKeyValueStore()
-        throwingStore.throwOnRead = InMemoryThrowingKeyValueStore.MockError.getError
-
-        let storeWithThrowingBacking = PromoHistoryStore(store: throwingStore, queue: nil)
-
-        let visibleIds = storeWithThrowingBacking.loadVisiblePromoIds()
-        XCTAssertTrue(visibleIds.isEmpty)
+        XCTAssertFalse(store.record(for: "reset-promo").actioned)
     }
 
     func testIsEligibleAsOf_MatchesIsEligibleBehavior() {

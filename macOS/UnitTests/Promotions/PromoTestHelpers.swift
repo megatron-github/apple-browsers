@@ -26,20 +26,18 @@ enum PromoTestHelpers {
         id: String = "test-promo",
         triggers: Set<PromoTrigger> = [.appLaunched],
         initiated: PromoInitiated = .app,
-        severity: PromoSeverity = .medium,
+        promoType: PromoType = .banner,
         context: PromoContext = .global,
         coexistingPromoIDs: Set<String> = [],
         respectsGlobalCooldown: Bool = true,
         setsGlobalCooldown: Bool = true,
-        timeoutInterval: TimeInterval? = nil,
-        timeoutResult: PromoResult = .none,
         delegate: (any PromoDelegate)? = nil
     ) -> Promo {
         Promo(
             id: id,
             triggers: triggers,
             initiated: initiated,
-            promoType: PromoType(severity: severity, timeoutInterval: timeoutInterval, timeoutResult: timeoutResult),
+            promoType: promoType,
             context: context,
             coexistingPromoIDs: coexistingPromoIDs,
             respectsGlobalCooldown: respectsGlobalCooldown,
