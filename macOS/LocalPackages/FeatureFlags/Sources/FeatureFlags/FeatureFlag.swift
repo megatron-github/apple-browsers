@@ -274,8 +274,9 @@ public enum FeatureFlag: String, CaseIterable {
     /// https://app.asana.com/1/137249556945/project/1211834678943996/task/1213442286513425
     case privateProcessName
 
-    /// Registry link TBD
-    case ctaQueue
+    /// Enables the promo service to coordinate promos/calls to action
+    /// https://app.asana.com/1/137249556945/project/1211834678943996/task/1213431687119179?focus=true
+    case promoQueue
 }
 
 extension FeatureFlag: FeatureFlagDescribing {
@@ -305,8 +306,7 @@ extension FeatureFlag: FeatureFlagDescribing {
                 .crashCollectionLimitCallStackTreeDepth,
                 .memoryUsageReporting,
                 .aiChatSidebarResizable,
-                .nextStepsListWidget,
-                .ctaQueue:
+                .nextStepsListWidget:
             true
         default:
             false
@@ -397,7 +397,7 @@ extension FeatureFlag: FeatureFlagDescribing {
                 .aiChatSidebarResizable,
                 .startupMetrics,
                 .privateProcessName,
-                .ctaQueue:
+                .promoQueue:
             return true
         case .freemiumDBP,
                 .contextualOnboarding,
@@ -569,8 +569,8 @@ extension FeatureFlag: FeatureFlagDescribing {
             return .internalOnly()
         case .privateProcessName:
             return .disabled
-        case .ctaQueue:
-            return .internalOnly()
+        case .promoQueue:
+            return .disabled
         }
     }
 }

@@ -1272,8 +1272,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         let urlEventHandlerResult = urlEventHandler.applicationDidFinishLaunching()
 
-        promoService = PromoServiceFactory.makePromoService(keyValueStore: keyValueStore, isExternallyActivated: urlEventHandlerResult.willOpenWindows)
-        NotificationCenter.default.post(name: .promoServiceAppLaunched, object: nil)
+        if featureFlagger.isFeatureOn(.promoQueue) {
+            promoService = PromoServiceFactory.makePromoService(keyValueStore: keyValueStore, isExternallyActivated: urlEventHandlerResult.willOpenWindows)
+            NotificationCenter.default.post(name: .promoServiceAppLaunched, object: nil)
+        }
 
         setUpAutoClearHandler()
         BWManager.shared.initCommunication()
