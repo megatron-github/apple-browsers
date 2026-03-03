@@ -313,6 +313,10 @@ final class MainViewController: NSViewController {
         aiChatOmnibarController.delegate = self
         browserTabViewController.delegate = self
         findInPageViewController.delegate = self
+
+        // Wire split view integration
+        navigationBarViewController.browserTabViewController = browserTabViewController
+        tabBarViewController.browserTabViewController = browserTabViewController
     }
 
     override func loadView() {

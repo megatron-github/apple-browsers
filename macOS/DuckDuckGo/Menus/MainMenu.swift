@@ -60,6 +60,8 @@ final class MainMenu: NSMenu {
     // MARK: View
     let stopMenuItem = NSMenuItem(title: UserText.mainMenuViewStop, action: #selector(MainViewController.stopLoadingPage), keyEquivalent: ".")
     let reloadMenuItem = NSMenuItem(title: UserText.mainMenuViewReloadPage, action: #selector(MainViewController.reloadPage), keyEquivalent: "r")
+    let toggleSplitViewMenuItem = NSMenuItem(title: "Split View", action: #selector(MainViewController.toggleSplitView), keyEquivalent: [.shift, .command, "d"])
+    let addSplitPaneMenuItem = NSMenuItem(title: "Add Split Pane", action: #selector(MainViewController.addSplitPane), keyEquivalent: [.shift, .command, .option, "d"])
 
     let toggleFullscreenMenuItem = NSMenuItem(title: UserText.mainMenuViewEnterFullScreen, action: #selector(NSWindow.toggleFullScreen), keyEquivalent: [.control, .command, "f"])
     let actualSizeMenuItem = NSMenuItem(title: UserText.mainMenuViewActualSize, action: #selector(MainViewController.actualSize), keyEquivalent: "0")
@@ -337,6 +339,8 @@ final class MainMenu: NSMenu {
             NSMenuItem.separator()
 
             NSMenuItem(title: UserText.mainMenuViewHome, action: #selector(MainViewController.home), keyEquivalent: "H")
+            toggleSplitViewMenuItem
+            addSplitPaneMenuItem
             NSMenuItem.separator()
 
             showTabsAndBookmarksBarOnFullScreenMenuItem
