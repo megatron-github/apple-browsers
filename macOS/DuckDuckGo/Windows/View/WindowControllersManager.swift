@@ -299,6 +299,16 @@ extension WindowControllersManager {
 
         case (.splitPane, nil):
             show(url: url, source: source)
+
+        case (.peek, let .some(windowController)):
+            let tabCollectionViewModel = windowController.mainViewController.tabCollectionViewModel
+            let newTab = Tab(content: .contentFromURL(url, source: source),
+                             shouldLoadInBackground: true,
+                             burnerMode: tabCollectionViewModel.burnerMode)
+            tabCollectionViewModel.insertOrAppendNewTab(.contentFromURL(url, source: source), selected: true)
+
+        case (.peek, nil):
+            show(url: url, source: source)
         }
     }
 

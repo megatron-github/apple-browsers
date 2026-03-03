@@ -28,12 +28,13 @@ enum LinkOpenBehavior: Equatable {
     case newTab(selected: Bool)
     case newWindow(selected: Bool)
     case splitPane
+    case peek
 
     var shouldSelectNewTab: Bool {
         switch self {
         case .currentTab: false
         case .newTab(selected: let selected), .newWindow(selected: let selected): selected
-        case .splitPane: false
+        case .splitPane, .peek: false
         }
     }
 
@@ -64,6 +65,12 @@ enum LinkOpenBehavior: Equatable {
     ///       e.g., ⌘⇧-click will make the tab non-selected if `switchToNewTabWhenOpenedPreference` is `true`.
     init(button: NSEvent.Button? = nil, modifierFlags: NSEvent.ModifierFlags? = nil, switchToNewTabWhenOpenedPreference: Bool, canOpenLinkInCurrentTab: Bool = true, shouldSelectNewTab: Bool = false) {
         let modifierFlags = modifierFlags ?? []
+
+        // ⇧+click (without ⌘ or ⌥): Peek view
+        if modifierFlags.contains(.shift) && !modifierFlags.contains(.command) && !modifierFlags.contains(.option) && button != .middle {
+            self = .peek
+            return
+        }
 
         // ⌥+click (without ⌘): Open in split pane
         if modifierFlags.contains(.option) && !modifierFlags.contains(.command) && button != .middle {
@@ -108,6 +115,7 @@ extension LinkOpenBehavior: CustomStringConvertible {
         case .newTab(selected: let selected): return "newTab" + (selected ? " (selected)" : "")
         case .newWindow(selected: let selected): return "newWindow" + (selected ? " (selected)" : "")
         case .splitPane: return "splitPane"
+        case .peek: return "peek"
         }
     }
 }

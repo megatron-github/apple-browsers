@@ -44,6 +44,8 @@ extension LinkOpenBehavior {
             return .tab(selected: selected, burner: isBurner)
         case .splitPane:
             return .splitPane(burner: isBurner)
+        case .peek:
+            return .peek(burner: isBurner)
         case .currentTab:
             return .none
         }

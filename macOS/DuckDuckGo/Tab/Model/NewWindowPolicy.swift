@@ -24,8 +24,14 @@ enum NewWindowPolicy: Equatable {
     case popup(origin: NSPoint?, size: NSSize?)
     case window(active: Bool, burner: Bool)
     case splitPane(burner: Bool)
+    case peek(burner: Bool)
 
     init(_ windowFeatures: WKWindowFeatures, linkOpenBehavior: LinkOpenBehavior, isBurner: Bool, preferTabsToWindows: Bool, contextMenuInitiated: Bool = false) {
+
+        if case .peek = linkOpenBehavior {
+            self = .peek(burner: isBurner)
+            return
+        }
 
         if case .splitPane = linkOpenBehavior {
             self = .splitPane(burner: isBurner)
@@ -105,6 +111,8 @@ extension NewWindowPolicy: CustomStringConvertible {
             """ : "")
         case .splitPane(burner: let burner):
             return "splitPane" + (burner ? "(burner)" : "")
+        case .peek(burner: let burner):
+            return "peek" + (burner ? "(burner)" : "")
         }
     }
 }

@@ -97,7 +97,7 @@ extension NavigationButtonMenuDelegate: NSMenuDelegate {
             tabCollectionViewModel.insert(tab, selected: selected)
         case .newWindow(let selected):
             WindowsManager.openNewWindow(with: tab, showWindow: selected)
-        case .splitPane:
+        case .splitPane, .peek:
             tabCollectionViewModel.insert(tab, selected: false)
         }
     }

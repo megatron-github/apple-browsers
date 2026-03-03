@@ -467,8 +467,7 @@ final class AddressBarTextField: NSTextField {
                 // Open in new window
                 openNew(.window, selected: selected, suggestion: suggestion)
 
-            case .splitPane:
-                // Open in new tab (split pane not applicable from address bar)
+            case .splitPane, .peek:
                 openNew(.tab, selected: false, suggestion: suggestion)
             }
         }

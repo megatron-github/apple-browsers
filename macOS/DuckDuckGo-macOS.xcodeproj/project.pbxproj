@@ -4241,6 +4241,10 @@
 		SPLIT001000000000000004 /* SplitViewState.swift in Sources */ = {isa = PBXBuildFile; fileRef = SPLIT001000000000000001 /* SplitViewState.swift */; };
 		SPLIT001000000000000005 /* SplitPaneView.swift in Sources */ = {isa = PBXBuildFile; fileRef = SPLIT001000000000000002 /* SplitPaneView.swift */; };
 		SPLIT001000000000000006 /* SplitPaneView.swift in Sources */ = {isa = PBXBuildFile; fileRef = SPLIT001000000000000002 /* SplitPaneView.swift */; };
+		PEEK0010000000000000003 /* PeekViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = PEEK0010000000000000001 /* PeekViewController.swift */; };
+		PEEK0010000000000000004 /* PeekViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = PEEK0010000000000000001 /* PeekViewController.swift */; };
+		PEEK0010000000000000005 /* PeekToolbarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = PEEK0010000000000000002 /* PeekToolbarView.swift */; };
+		PEEK0010000000000000006 /* PeekToolbarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = PEEK0010000000000000002 /* PeekToolbarView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -6536,6 +6540,8 @@
 		FD23FD2C2886A81D007F6985 /* AutoconsentManagement.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutoconsentManagement.swift; sourceTree = "<group>"; };
 		SPLIT001000000000000001 /* SplitViewState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplitViewState.swift; sourceTree = "<group>"; };
 		SPLIT001000000000000002 /* SplitPaneView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplitPaneView.swift; sourceTree = "<group>"; };
+		PEEK0010000000000000001 /* PeekViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeekViewController.swift; sourceTree = "<group>"; };
+		PEEK0010000000000000002 /* PeekToolbarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeekToolbarView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -10245,6 +10251,7 @@
 				85890634267B6CC500D23B0D /* SecureVault */,
 				B6F7127C29F6776B00594A45 /* Sharing */,
 				SPLIT001000000000000007 /* SplitView */,
+				PEEK0010000000000000007 /* PeekView */,
 				4B677422255DBEB800025BD8 /* SmarterEncryption */,
 				B68458AE25C7E75100DC17B6 /* StateRestoration */,
 				B6A9E44E26142AF90067D1B9 /* Statistics */,
@@ -10627,6 +10634,15 @@
 				4B0DB5E428BD9D08007DD239 /* PinningManager.swift */,
 			);
 			path = NavigationBar;
+			sourceTree = "<group>";
+		};
+		PEEK0010000000000000007 /* PeekView */ = {
+			isa = PBXGroup;
+			children = (
+				PEEK0010000000000000001 /* PeekViewController.swift */,
+				PEEK0010000000000000002 /* PeekToolbarView.swift */,
+			);
+			path = PeekView;
 			sourceTree = "<group>";
 		};
 		SPLIT001000000000000007 /* SplitView */ = {
@@ -14509,6 +14525,8 @@
 				BD7090D32C52ECFE009EED82 /* UnifiedMetadataCollector.swift in Sources */,
 				4B9DB0362A983B24000927DB /* WaitlistTermsAndConditionsView.swift in Sources */,
 				37197EA82942443D00394917 /* BrowserTabViewController.swift in Sources */,
+				PEEK0010000000000000003 /* PeekViewController.swift in Sources */,
+				PEEK0010000000000000005 /* PeekToolbarView.swift in Sources */,
 				SPLIT001000000000000003 /* SplitViewState.swift in Sources */,
 				SPLIT001000000000000005 /* SplitPaneView.swift in Sources */,
 				3706FB39293F65D500E42796 /* PrivacyDashboardPopover.swift in Sources */,
@@ -16935,6 +16953,8 @@
 				E9F3D5067B8C901234567890 /* AutoconsentEventCoordinator.swift in Sources */,
 				AA4BBA3B25C58FA200C4FB0F /* MainMenu.swift in Sources */,
 				AA585D84248FD31100E9A3E2 /* BrowserTabViewController.swift in Sources */,
+				PEEK0010000000000000004 /* PeekViewController.swift in Sources */,
+				PEEK0010000000000000006 /* PeekToolbarView.swift in Sources */,
 				SPLIT001000000000000004 /* SplitViewState.swift in Sources */,
 				SPLIT001000000000000006 /* SplitPaneView.swift in Sources */,
 				B693954B26F04BEB0015B914 /* MouseOverView.swift in Sources */,

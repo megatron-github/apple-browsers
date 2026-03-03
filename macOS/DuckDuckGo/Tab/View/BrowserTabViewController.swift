@@ -98,6 +98,10 @@ final class BrowserTabViewController: NSViewController {
     /// Used by the tab bar to visually mark split-group tabs.
     @Published private(set) var splitViewTabs: Set<ObjectIdentifier> = []
 
+    // MARK: - Peek View
+
+    private var peekViewController: PeekViewController?
+
     private let tabCollectionViewModel: TabCollectionViewModel
     private let bookmarkManager: BookmarkManager
     private let bookmarkDragDropManager: BookmarkDragDropManager
@@ -1427,9 +1431,10 @@ extension BrowserTabViewController: TabDelegate {
         case .tab(selected: let selected, _, _):
             self.tabCollectionViewModel.insert(childTab, after: parentTab, selected: selected)
         case .splitPane:
-            // Add the tab to the tab collection (not selected) and open it in a split pane
             self.tabCollectionViewModel.insert(childTab, after: parentTab, selected: false)
             self.enterSplitView(with: childTab)
+        case .peek:
+            presentPeekView(for: childTab, parentTab: parentTab)
         }
     }
 
@@ -2143,6 +2148,56 @@ extension BrowserTabViewController {
                 self.splitViewFocusedTabViewModel = self.activeSplitViewGroup?.state.focusedTabViewModel
             }
             .store(in: &splitViewCancellables)
+    }
+
+    // MARK: - Peek View
+
+    /// Present a peek overlay for a child tab (not yet in the tab collection).
+    func presentPeekView(for childTab: Tab, parentTab: Tab) {
+        dismissPeekView()
+
+        let peekVC = PeekViewController(tab: childTab, parentTab: parentTab)
+        peekVC.delegate = self
+        self.peekViewController = peekVC
+
+        addChild(peekVC)
+        peekVC.view.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(peekVC.view)
+
+        NSLayoutConstraint.activate([
+            peekVC.view.topAnchor.constraint(equalTo: view.topAnchor),
+            peekVC.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            peekVC.view.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            peekVC.view.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        ])
+    }
+
+    func dismissPeekView() {
+        guard let peekVC = peekViewController else { return }
+        peekVC.view.removeFromSuperview()
+        peekVC.removeFromParent()
+        peekViewController = nil
+    }
+}
+
+// MARK: - PeekViewControllerDelegate
+
+extension BrowserTabViewController: PeekViewControllerDelegate {
+
+    func peekViewControllerDidRequestSplitPane(_ controller: PeekViewController, tab: Tab) {
+        dismissPeekView()
+        tabCollectionViewModel.insert(tab, after: controller.parentTab, selected: false)
+        enterSplitView(with: tab)
+    }
+
+    func peekViewControllerDidRequestNewTab(_ controller: PeekViewController, tab: Tab) {
+        dismissPeekView()
+        tabCollectionViewModel.insert(tab, after: controller.parentTab, selected: true)
+    }
+
+    func peekViewControllerDidDismiss(_ controller: PeekViewController, tab: Tab) {
+        dismissPeekView()
+        tab.stopAllMediaAndLoading()
     }
 }
 
