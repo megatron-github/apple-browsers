@@ -25,20 +25,23 @@
         "owners": ["mallexxx"],
         "triggers": ["other"],
         "suffixes": ["platform", "form_factor"],
-        "parameters": ["appVersion"]
+        "parameters": ["appVersion"],
+        "expires": "2026-09-06"
     },
     "m_preonboarding_duckai_toggle-continue-pressed_search": {
         "description": "Fires when the user continues with Search selected on the onboarding experiment toggle screen",
         "owners": ["mallexxx"],
         "triggers": ["other"],
         "suffixes": ["platform", "form_factor"],
-        "parameters": ["appVersion"]
+        "parameters": ["appVersion"],
+        "expires": "2026-09-06"
     },
     "m_preonboarding_duckai_toggle-continue-pressed_ai": {
         "description": "Fires when the user continues with Search & Duck.ai selected on the onboarding experiment toggle screen",
         "owners": ["mallexxx"],
         "triggers": ["other"],
         "suffixes": ["platform", "form_factor"],
-        "parameters": ["appVersion"]
+        "parameters": ["appVersion"],
+        "expires": "2026-09-06"
     }
 }
