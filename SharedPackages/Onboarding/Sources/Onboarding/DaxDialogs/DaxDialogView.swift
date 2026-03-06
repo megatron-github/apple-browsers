@@ -66,7 +66,7 @@ public struct DaxDialogView<Content: View>: View {
         showBubbleArrow: Bool = true,
         cornerRadius: CGFloat = 16.0,
         arrowSize: CGSize = .init(width: 16.0, height: 8.0),
-        contentInsets: EdgeInsets = .init(top: 24, leading: 24, bottom: 24, trailing: 24),
+        contentInsets: EdgeInsets = .init(top: DaxDialogMetrics.contentPadding, leading: DaxDialogMetrics.contentPadding, bottom: DaxDialogMetrics.contentPadding, trailing: DaxDialogMetrics.contentPadding),
         onTapGesture: (() -> Void)? = nil,
         onManualDismiss: (() -> Void)? = nil,
         @ViewBuilder content: () -> Content
