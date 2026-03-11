@@ -72,11 +72,12 @@ open class TabBarCollectionView: NSCollectionView {
 
     open override func selectItems(at indexPaths: Set<IndexPath>, scrollPosition: NSCollectionView.ScrollPosition) {
         super.selectItems(at: indexPaths, scrollPosition: scrollPosition)
-
+NSLog("#### selectItems(at: \(indexPaths)")
         updateItemsLeftToSelectedItems(indexPaths)
     }
 
     func clearSelection(animated: Bool = false) {
+NSLog("#### CLEARING \(selectionIndexPaths)")
         if animated {
             animator().deselectItems(at: selectionIndexPaths)
         } else {

@@ -596,6 +596,7 @@ final class TabBarViewController: NSViewController, TabBarRemoteMessagePresentin
     }
 
     private func clearSelection(animated: Bool = false) {
+NSLog("#### clearSelection(animated: \(animated)")
         collectionView.clearSelection(animated: animated)
         pinnedTabsCollectionView?.clearSelection(animated: animated)
     }

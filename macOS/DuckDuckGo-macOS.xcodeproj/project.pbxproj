@@ -2983,6 +2983,8 @@
 		B5DFC53A2F608DD8001AB6AA /* XCUIApplication+Helpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5DFC5392F608DD8001AB6AA /* XCUIApplication+Helpers.swift */; };
 		B5E197EB2E8C645500C447CC /* ThemeManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E197E92E8C645500C447CC /* ThemeManagerTests.swift */; };
 		B5E197EC2E8C646700C447CC /* ThemeManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E197E92E8C645500C447CC /* ThemeManagerTests.swift */; };
+		B5E726682F60C15A007DCD92 /* TabBackgroundView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E726672F60C15A007DCD92 /* TabBackgroundView.swift */; };
+		B5E726692F60C15A007DCD92 /* TabBackgroundView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E726672F60C15A007DCD92 /* TabBackgroundView.swift */; };
 		B5E7B6C02ED4A52E00094EDF /* TitleDisplayPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E7B6BF2ED4A52C00094EDF /* TitleDisplayPolicy.swift */; };
 		B5E7B6C12ED4A52E00094EDF /* TitleDisplayPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E7B6BF2ED4A52C00094EDF /* TitleDisplayPolicy.swift */; };
 		B5E7B6C52ED4A79500094EDF /* TitleDisplayPolicyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5E7B6C42ED4A79500094EDF /* TitleDisplayPolicyTests.swift */; };
@@ -5851,6 +5853,7 @@
 		B5DFC5372F608D45001AB6AA /* UITests+Helpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UITests+Helpers.swift"; sourceTree = "<group>"; };
 		B5DFC5392F608DD8001AB6AA /* XCUIApplication+Helpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "XCUIApplication+Helpers.swift"; sourceTree = "<group>"; };
 		B5E197E92E8C645500C447CC /* ThemeManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemeManagerTests.swift; sourceTree = "<group>"; };
+		B5E726672F60C15A007DCD92 /* TabBackgroundView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabBackgroundView.swift; sourceTree = "<group>"; };
 		B5E7B6BF2ED4A52C00094EDF /* TitleDisplayPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TitleDisplayPolicy.swift; sourceTree = "<group>"; };
 		B5E7B6C42ED4A79500094EDF /* TitleDisplayPolicyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TitleDisplayPolicyTests.swift; sourceTree = "<group>"; };
 		B5E7B6C82ED4A7A800094EDF /* LoadingIndicatorPolicyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoadingIndicatorPolicyTests.swift; sourceTree = "<group>"; };
@@ -10555,6 +10558,7 @@
 				84B9BDBE2E2A94800068927C /* TabBarView.swift */,
 				1430DFF424D0580F00B8978C /* TabBarViewController.swift */,
 				AA7412B024D0B3AC00D22FE0 /* TabBarViewItem.swift */,
+				B5E726672F60C15A007DCD92 /* TabBackgroundView.swift */,
 				AA9E9A5D25A4867200D1959D /* TabDragAndDropManager.swift */,
 				B574243A2EBA8CDF002E5460 /* TabFaviconView.swift */,
 				311B262628E73E0A00FD181A /* TabShadowConfig.swift */,
@@ -14910,6 +14914,7 @@
 				9F56CFAE2B84326C00BB7F11 /* AddEditBookmarkDialogViewModel.swift in Sources */,
 				567A23D52C81E2180010F66C /* ContextualDaxDialogsFactory.swift in Sources */,
 				7BA930AF2E0DA5BF00723574 /* NavigationEngagementPixel.swift in Sources */,
+				B5E726692F60C15A007DCD92 /* TabBackgroundView.swift in Sources */,
 				3706FBF3293F65D500E42796 /* PseudoFolder.swift in Sources */,
 				1D26EBAD2B74BECB0002A93F /* NSImageSendable.swift in Sources */,
 				C10529472C9F456C0041E502 /* AutofillCredentialsDebugViewModel.swift in Sources */,
@@ -17028,6 +17033,7 @@
 				37EE55E92D5F197300D53C7C /* BadgeAnimationView.swift in Sources */,
 				37EE55EA2D5F197300D53C7C /* BadgeNotificationAnimationModel.swift in Sources */,
 				EEDD4E392E5DED4500B0C41A /* LegacySyncPreferences.swift in Sources */,
+				B5E726682F60C15A007DCD92 /* TabBackgroundView.swift in Sources */,
 				CCF40A682ED7432800CBF271 /* UserChurnService.swift in Sources */,
 				7B11B3042EF304B6005F0687 /* AutomationServer.swift in Sources */,
 				7B11B3052EF304B6005F0687 /* LaunchOptionsHandler.swift in Sources */,
