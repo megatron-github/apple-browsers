@@ -560,6 +560,7 @@ extension TabBarItemCellView: ThemeUpdateListening {
 
         if backgroundAnimations {
             backgroundView.backgroundColor = colorsProvider.navigationBackgroundColor
+            backgroundView.overlayColor = tabStyleProvider.hoverTabColor
         } else {
             leftRampView.rampColor = colorsProvider.navigationBackgroundColor
             rightRampView.rampColor = colorsProvider.navigationBackgroundColor
@@ -820,7 +821,7 @@ final class TabBarViewItem: NSCollectionViewItem {
             updateSubviews()
             CATransaction.commit()
 
-            cell.backgroundView.performAnimation()
+            cell.backgroundView.performAnimationIfNeeded(isSelected: isSelected, isDragged: isDragged, isMouseOver: isMouseOver)
             updateUsedPermissions()
         }
     }
@@ -1031,9 +1032,6 @@ final class TabBarViewItem: NSCollectionViewItem {
     private func updateSubviews() {
         withoutAnimation {
             if cell.backgroundAnimations {
-                cell.backgroundView.isDragged = isDragged
-                cell.backgroundView.isSelected = isSelected
-
                 cell.mouseOverView.backgroundColor = nil
                 cell.mouseOverView.mouseOverColor = nil
 
@@ -1487,6 +1485,9 @@ extension TabBarViewItem: MouseClickViewDelegate {
     func mouseOverView(_ mouseOverView: MouseOverView, isMouseOver: Bool) {
         delegate?.tabBarViewItem(self, isMouseOver: isMouseOver)
         self.isMouseOver = isMouseOver
+
+        cell.backgroundView.performAnimationIfNeeded(isSelected: isSelected, isDragged: isDragged, isMouseOver: isMouseOver)
+
         view.needsLayout = true
         eventMonitor = isMouseOver ? NSEvent.addLocalMonitorForEvents(matching: .flagsChanged) { [weak self] event in
             if let self, widthStage.isCloseButtonHidden {
