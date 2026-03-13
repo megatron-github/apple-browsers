@@ -238,7 +238,7 @@ struct UserAgent {
                       privacyConfig: PrivacyConfiguration = ContentBlocking.shared.privacyConfigurationManager.privacyConfig) -> String {
 
         // TODO: Temporary onboarding experiment override; remove when Duck.ai onboarding no longer requires forced Safari UA.
-        if url?.host?.lowercased() != Constants.duckAIDemoHost {
+        if url?.host?.lowercased() == Constants.duckAIDemoHost {
             return Constants.UserAgentOverride
         }
 
