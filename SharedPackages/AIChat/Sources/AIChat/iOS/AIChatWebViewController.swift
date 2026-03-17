@@ -153,11 +153,6 @@ extension AIChatWebViewController {
             return chatModel.aiChatURL
         }
 
-        // TODO: Temporary onboarding demo-host override; remove when onboarding no longer targets demo FE.
-        if case .deferUntilFirstQuery = onboardingConsentType {
-            components.host = AIChatURLParameters.onboardingDemoHost
-        }
-
         var queryItems = components.queryItems ?? []
 
         if !query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {

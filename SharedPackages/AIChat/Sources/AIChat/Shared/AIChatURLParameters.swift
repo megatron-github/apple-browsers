@@ -29,8 +29,6 @@ public enum AIChatURLParameters {
     public static let flowQueryName = "flow"
     /// Flow selector value for onboarding.
     public static let onboardingFlowQueryValue = "onboarding"
-    /// TODO: Temporary demo host override for onboarding experiment validation; remove when demo routing is no longer required.
-    public static let onboardingDemoHost = "use-serp-dev-testing15.duck.ai"
 }
 
 /// Allowed onboarding consent behaviors passed through Duck.ai URL query params.

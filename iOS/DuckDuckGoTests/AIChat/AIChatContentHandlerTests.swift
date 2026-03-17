@@ -205,7 +205,6 @@ final class AIChatContentHandlerTests: XCTestCase {
 
         let flowItem = components.queryItems?.first { $0.name == AIChatURLParameters.flowQueryName }
         XCTAssertEqual(flowItem?.value, AIChatURLParameters.onboardingFlowQueryValue)
-        XCTAssertEqual(components.host, AIChatURLParameters.onboardingDemoHost)
     }
 
     func testBuildQueryURLWithTools() throws {
