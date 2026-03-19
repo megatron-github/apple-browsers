@@ -107,12 +107,12 @@ private extension TabBackgroundView {
         wantsLayer = true
         clipsToBounds = false
 
-        if shouldRasterize, let layer {
-            layer.shouldRasterize = true
-            layer.rasterizationScale = NSScreen.main?.backingScaleFactor ?? 2
-        }
-
         backgroundShapeView.wantsLayer = true
+
+        if shouldRasterize, let shapeLayer = backgroundShapeView.layer {
+            shapeLayer.shouldRasterize = true
+            shapeLayer.rasterizationScale = NSScreen.main?.backingScaleFactor ?? 2
+        }
         backgroundShapeView.clipsToBounds = false
         backgroundShapeView.rampSize = Metrics.shapeRampSize
         backgroundShapeView.tabCornerRadius = Metrics.shapeCornerRadius
