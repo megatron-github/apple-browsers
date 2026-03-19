@@ -297,6 +297,9 @@ public enum FeatureFlag: String, CaseIterable {
     /// Enables the new Tab Animations (Milestone 1)
     /// https://app.asana.com/1/137249556945/project/1211834678943996/task/1213643457004332
     case tabAnimations
+
+    /// Enables layer rasterization for Tab Animation views
+    case tabAnimationsRasterized
 }
 
 extension FeatureFlag: FeatureFlagDescribing {
@@ -333,7 +336,8 @@ extension FeatureFlag: FeatureFlagDescribing {
         case .autofillPasswordsStatusBar,
              .aiChatSidebarFloating,
              .semaphoreAlwaysVisible,
-             .tabAnimations:
+             .tabAnimations,
+             .tabAnimationsRasterized:
             .internalOnly
         default:
             .disabled
@@ -430,7 +434,8 @@ extension FeatureFlag: FeatureFlagDescribing {
                 .webViewLookUpAction,
                 .promoQueue,
                 .semaphoreAlwaysVisible,
-                .tabAnimations:
+                .tabAnimations,
+                .tabAnimationsRasterized:
             return true
         case .freemiumDBP,
                 .contextualOnboarding,
@@ -616,6 +621,8 @@ extension FeatureFlag: FeatureFlagDescribing {
             return .remoteReleasable(.feature(.promoQueue))
         case .tabAnimations:
             return .remoteReleasable(.subfeature(MacOSBrowserConfigSubfeature.tabAnimations))
+        case .tabAnimationsRasterized:
+            return .remoteReleasable(.subfeature(MacOSBrowserConfigSubfeature.tabAnimationsRasterized))
         }
     }
 }

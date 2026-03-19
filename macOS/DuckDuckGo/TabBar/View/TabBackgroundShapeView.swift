@@ -17,10 +17,13 @@
 //
 
 import AppKit
+import os.signpost
 import QuartzCore
 
 /// Renders the Tab Background using a CAShapeLayer so path and fill are updated without CPU-bound draw(_:).
 final class TabBackgroundShapeView: NSView {
+
+    private static let log = OSLog(subsystem: "com.duckduckgo.instrumentation", category: "TabBackgroundShape")
 
     private var lastPathSize: NSSize = .zero
 
@@ -120,11 +123,24 @@ private extension TabBackgroundShapeView {
     }
 
     func refreshShapePath() {
+        let spid = OSSignpostID(log: Self.log)
+        os_signpost(.begin, log: Self.log, name: "refreshShapePath", signpostID: spid, "###")
+        let start = CACurrentMediaTime()
+
         shapeLayer.path = buildBackgroundCGPath()
+
+        let elapsed = (CACurrentMediaTime() - start) * 1000
+        os_signpost(.end, log: Self.log, name: "refreshShapePath", signpostID: spid, "### done %.3fms", elapsed)
+        Logger.tabBackground.debug("### refreshShapePath: \(elapsed, format: .fixed(precision: 3), privacy: .public)ms")
     }
 
     func buildBackgroundCGPath() -> CGPath? {
+        let spid = OSSignpostID(log: Self.log)
+        os_signpost(.begin, log: Self.log, name: "buildBackgroundCGPath", signpostID: spid, "###")
+        let start = CACurrentMediaTime()
+
         guard bounds.width > 0, bounds.height > 0 else {
+            os_signpost(.end, log: Self.log, name: "buildBackgroundCGPath", signpostID: spid, "### no-op (zero bounds)")
             return nil
         }
 
@@ -133,6 +149,9 @@ private extension TabBackgroundShapeView {
             CGPath(roundedRect: bounds, cornerWidth: tabCornerRadius, cornerHeight: tabCornerRadius, transform: nil)
 
         guard shouldDisplayRamps, let rampSize else {
+            let elapsed = (CACurrentMediaTime() - start) * 1000
+            os_signpost(.end, log: Self.log, name: "buildBackgroundCGPath", signpostID: spid, "### done %.3fms (no ramps)", elapsed)
+            Logger.tabBackground.debug("### buildBackgroundCGPath: \(elapsed, format: .fixed(precision: 3), privacy: .public)ms (no ramps)")
             return backgroundPath
         }
 
@@ -142,6 +161,9 @@ private extension TabBackgroundShapeView {
         outputPath.addPath(.leadingRamp(size: rampSize), transform: CGAffineTransform(translationX: -rampSize.width, y: 0))
         outputPath.addPath(.trailingRamp(size: rampSize), transform: CGAffineTransform(translationX: bounds.width, y: 0))
 
+        let elapsed = (CACurrentMediaTime() - start) * 1000
+        os_signpost(.end, log: Self.log, name: "buildBackgroundCGPath", signpostID: spid, "### done %.3fms", elapsed)
+        Logger.tabBackground.debug("### buildBackgroundCGPath: \(elapsed, format: .fixed(precision: 3), privacy: .public)ms")
         return outputPath
     }
 }

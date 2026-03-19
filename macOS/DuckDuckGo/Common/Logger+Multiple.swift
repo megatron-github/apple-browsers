@@ -33,6 +33,7 @@ extension Logger {
     static var pinnedTabs = { Logger(subsystem: "PinnedTabs", category: "") }()
     static var memory = { Logger(subsystem: "Memory", category: "") }()
     static var profiler = { Logger(subsystem: "Profiler", category: "") }()
+    static var tabBackground = { Logger(subsystem: "TabBackground", category: "") }()
 }
 
 /// Provide value debug description or ??? "defaultValue" - to be used for logging like:

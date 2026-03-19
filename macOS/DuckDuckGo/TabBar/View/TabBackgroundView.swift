@@ -17,9 +17,13 @@
 //
 
 import Cocoa
+import os.signpost
+import QuartzCore
 
 /// Renders the Tab Background Shape + Hover Overlay, driving state-based animations for selection, highlight, and drag.
 final class TabBackgroundView: NSView {
+
+    private static let log = OSLog(subsystem: "com.duckduckgo.instrumentation", category: "TabBackground")
 
     // MARK: - Constants
 
@@ -74,11 +78,13 @@ final class TabBackgroundView: NSView {
     // MARK: - Initializers
 
     override init(frame: NSRect) {
+        let shouldRasterize = NSApp.delegateTyped.featureFlagger.isFeatureOn(.tabAnimationsRasterized)
+
         super.init(frame: frame)
 
         addSubview(overlayView)
         addSubview(backgroundShapeView)
-        setupView()
+        setupView(shouldRasterize: shouldRasterize)
     }
 
     @available(*, unavailable)
@@ -97,9 +103,14 @@ final class TabBackgroundView: NSView {
 
 private extension TabBackgroundView {
 
-    func setupView() {
+    func setupView(shouldRasterize: Bool) {
         wantsLayer = true
         clipsToBounds = false
+
+        if shouldRasterize, let layer {
+            layer.shouldRasterize = true
+            layer.rasterizationScale = NSScreen.main?.backingScaleFactor ?? 2
+        }
 
         backgroundShapeView.wantsLayer = true
         backgroundShapeView.clipsToBounds = false
@@ -147,8 +158,14 @@ private extension TabBackgroundView {
 extension TabBackgroundView {
 
     func refreshStateIfNeeded(isSelected: Bool, isDragged: Bool, isMouseOver: Bool, animated: Bool = true) {
+        let spid = OSSignpostID(log: Self.log)
+        os_signpost(.begin, log: Self.log, name: "refreshStateIfNeeded", signpostID: spid,
+                    "### isSelected=%d isDragged=%d isMouseOver=%d", isSelected ? 1 : 0, isDragged ? 1 : 0, isMouseOver ? 1 : 0)
+        let start = CACurrentMediaTime()
+
         let newState = TabBackgroundState.nextState(isMouseOver: isMouseOver, isSelected: isSelected, isDragged: isDragged)
         guard state != newState else {
+            os_signpost(.end, log: Self.log, name: "refreshStateIfNeeded", signpostID: spid, "### no-op (state unchanged)")
             return
         }
 
@@ -156,6 +173,10 @@ extension TabBackgroundView {
         applyStateChange(state, entering: false, animated: animateExit)
         applyStateChange(newState, entering: true, animated: animated)
         state = newState
+
+        let elapsed = (CACurrentMediaTime() - start) * 1000
+        os_signpost(.end, log: Self.log, name: "refreshStateIfNeeded", signpostID: spid, "### done %.3fms", elapsed)
+        Logger.tabBackground.debug("### refreshStateIfNeeded: \(elapsed, format: .fixed(precision: 3), privacy: .public)ms (state -> \(String(describing: newState), privacy: .public))")
     }
 
     private func shouldSkipExitAnimation(from oldState: TabBackgroundState, to newState: TabBackgroundState) -> Bool {
@@ -164,6 +185,11 @@ extension TabBackgroundView {
     }
 
     private func applyStateChange(_ state: TabBackgroundState, entering: Bool, animated: Bool) {
+        let spid = OSSignpostID(log: Self.log)
+        os_signpost(.begin, log: Self.log, name: "applyStateChange", signpostID: spid,
+                    "### state=%{public}@ entering=%d", String(describing: state), entering ? 1 : 0)
+        let start = CACurrentMediaTime()
+
         switch state {
         case .highlighted:
             refreshOverlayVisibility(entering, animated: animated)
@@ -175,6 +201,10 @@ extension TabBackgroundView {
         case .idle:
             break
         }
+
+        let elapsed = (CACurrentMediaTime() - start) * 1000
+        os_signpost(.end, log: Self.log, name: "applyStateChange", signpostID: spid, "### done %.3fms", elapsed)
+        Logger.tabBackground.debug("### applyStateChange: \(elapsed, format: .fixed(precision: 3), privacy: .public)ms (\(String(describing: state), privacy: .public) entering=\(entering, privacy: .public))")
     }
 }
 
