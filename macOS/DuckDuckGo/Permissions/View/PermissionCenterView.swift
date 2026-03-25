@@ -29,7 +29,7 @@ struct PermissionCenterView: View {
 
     private enum PopoverWidth {
         static let base: CGFloat = 400
-        static let withExternalApps: CGFloat = 380
+        static let withExternalApps: CGFloat = 420
         static let withPopups: CGFloat = 450
 
         /// Wider widths for languages with longer popup permission strings
