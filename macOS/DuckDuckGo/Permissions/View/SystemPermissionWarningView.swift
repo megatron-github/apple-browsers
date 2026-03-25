@@ -44,7 +44,7 @@ struct SystemPermissionWarningView: View {
         (Text(prefixText)
             .font(.system(size: 12))
             .foregroundColor(Color(designSystemColor: .textSecondary))
-        + Text(" ")
+        + Text(prefixText.last?.isWhitespace == true ? "" : " ")
         + Text(linkText)
             .font(.system(size: 12))
             .foregroundColor(linkColor))

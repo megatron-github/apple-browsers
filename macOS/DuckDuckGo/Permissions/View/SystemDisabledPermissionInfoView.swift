@@ -71,16 +71,9 @@ struct SystemDisabledPermissionInfoView: View {
         }
     }
 
-    /// Whether to add a space between warning text and link (notification has no trailing space, location does)
+    /// Whether to add a space between warning text and link.
     private var needsSpaceBetweenWarningAndLink: Bool {
-        switch permissionType {
-        case .notification:
-            return true
-        case .geolocation:
-            return false  // Location string already has trailing space
-        default:
-            return true
-        }
+        warningText.last?.isWhitespace != true
     }
 
     var body: some View {

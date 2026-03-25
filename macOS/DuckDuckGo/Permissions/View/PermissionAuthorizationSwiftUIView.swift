@@ -559,7 +559,7 @@ struct PermissionAuthorizationSwiftUIView: View {
         (Text(permissionType.systemPermissionDisabledTextStandalone)
             .font(.system(size: 12))
             .foregroundColor(Color(designSystemColor: .textSecondary))
-        + Text(" ")
+        + Text(permissionType.systemPermissionDisabledTextStandalone.last?.isWhitespace == true ? "" : " ")
         + Text(permissionType.systemSettingsLinkText)
             .font(.system(size: 12))
             .foregroundColor(Color(designSystemColor: .textLink)))
