@@ -26,7 +26,7 @@ import UIKit
 import AppKit
 #endif
 
-@Suite("Inline image text parsing")
+@Suite("Inline image text parsing", .timeLimit(.minutes(1)))
 struct InlineImageTextTests {
 
     @Test("When replacement map is empty then parser returns the original text as a single item")
