@@ -107,15 +107,11 @@ final class OnboardingActionsManager: OnboardingActionsManaging {
         let systemSettings: SystemSettings
         let order = "v3"
         let platform = OnboardingPlatform(name: "macos")
-        if applicationBuildType.isAppStoreBuild {
-            let rows = [
-                featureFlagger.isFeatureOn(.addToDockAppStore) ? "dock-instructions" : nil,
-                "import",
-            ].compactMap { $0 }
-            systemSettings = SystemSettings(rows: rows)
-        } else {
-            systemSettings = SystemSettings(rows: ["dock", "import"])
-        }
+        let rows = [
+            featureFlagger.isFeatureOn(.addToDockAppStore) ? "dock-instructions" : nil,
+            "import",
+        ].compactMap { $0 }
+        systemSettings = SystemSettings(rows: rows)
         let stepDefinitions = StepDefinitions(systemSettings: systemSettings)
         let preferredLocale = Bundle.main.preferredLocalizations.first ?? "en"
         var env: String

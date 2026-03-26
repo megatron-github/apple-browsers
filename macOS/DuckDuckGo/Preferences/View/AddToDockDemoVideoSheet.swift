@@ -40,7 +40,7 @@ extension Preferences {
                         Self.referenceVideoSize.width / Self.referenceVideoSize.height,
                         contentMode: .fit
                     )
-                    .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                    .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
                     .frame(minWidth: Preferences.Const.minContentWidth, maxWidth: Preferences.Const.paneContentWidth)
 
                 HStack {

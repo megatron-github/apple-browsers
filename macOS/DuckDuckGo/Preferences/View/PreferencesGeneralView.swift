@@ -68,40 +68,7 @@ extension Preferences {
             PreferencePane(UserText.general) {
 
                 // SECTION: Shortcuts
-                if dockModel.canAddToDock {
-                    PreferencePaneSection(UserText.shortcuts, spacing: 4) {
-                        PreferencePaneSubSection {
-                            HStack {
-                                if dockModel.isAddedToDock {
-                                    HStack {
-                                        Image(.checkCircle).foregroundColor(Color(.successGreen))
-                                        Text(UserText.isAddedToDock)
-                                    }
-                                    .transition(.opacity)
-                                    .padding(.trailing, 8)
-                                } else {
-                                    HStack {
-                                        Image(.warning).foregroundColor(Color(.linkBlue))
-                                        Text(UserText.isNotAddedToDock)
-                                    }
-                                    .padding(.trailing, 8)
-                                    Button(action: {
-                                        withAnimation {
-                                            dockModel.addToDock(from: .general)
-                                        }
-                                    }) {
-                                        Text(UserText.addToDock)
-                                            .fixedSize(horizontal: true, vertical: false)
-                                            .multilineTextAlignment(.center)
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    .onAppear {
-                        dockModel.refresh()
-                    }
-                } else if dockModel.canShowDockInstructions {
+                if dockModel.canShowDockInstructions {
                     PreferencePaneSection(UserText.shortcuts, spacing: 4) {
                         PreferencePaneSubSection {
                             HStack(alignment: .top) {
