@@ -1565,26 +1565,22 @@ extension Tab/*: NavigationResponder*/ { // to be moved to Tab+Navigation.swift
 
     // MARK: - _WKResourceLoadDelegate
 
-    private func resourceURL(_ resourceLoadInfo: Any) -> URL? {
-        (resourceLoadInfo as? NSObject)?.value(forKey: "originalURL") as? URL
-    }
-
     @objc(webView:resourceLoad:didSendRequest:)
     func webView(_ webView: WKWebView, resourceLoad resourceLoadInfo: Any, didSendRequest request: URLRequest) {
-        guard let url = resourceURL(resourceLoadInfo) else { return }
-        resourceLoadTracker.didSendRequest(for: url)
+        guard let id = ResourceLoadTracker.resourceLoadID(from: resourceLoadInfo) else { return }
+        resourceLoadTracker.didSendRequest(for: id)
     }
 
     @objc(webView:resourceLoad:didReceiveResponse:)
     func webView(_ webView: WKWebView, resourceLoad resourceLoadInfo: Any, didReceiveResponse response: URLResponse) {
-        guard let url = resourceURL(resourceLoadInfo) else { return }
-        resourceLoadTracker.didReceiveResponse(for: url)
+        guard let id = ResourceLoadTracker.resourceLoadID(from: resourceLoadInfo) else { return }
+        resourceLoadTracker.didReceiveResponse(for: id)
     }
 
     @objc(webView:resourceLoad:didCompleteWithError:response:)
     func webView(_ webView: WKWebView, resourceLoad resourceLoadInfo: Any, didCompleteWithError error: Error?, response: URLResponse?) {
-        guard let url = resourceURL(resourceLoadInfo) else { return }
-        resourceLoadTracker.didComplete(for: url)
+        guard let id = ResourceLoadTracker.resourceLoadID(from: resourceLoadInfo) else { return }
+        resourceLoadTracker.didComplete(for: id)
     }
 
     /// Factory method to create a child Tab

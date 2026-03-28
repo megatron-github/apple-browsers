@@ -36,7 +36,10 @@ final class ResourceLoadTracker {
         case responseReceived
     }
 
-    private var resources = [URL: ResourceState]()
+    /// Unique identifier for a resource load, extracted from `_WKResourceLoadInfo.resourceLoadID`.
+    typealias ResourceLoadID = UInt64
+
+    private var resources = [ResourceLoadID: ResourceState]()
     private var stalledCheckTimer: Timer?
     private let allResourcesStalledSubject = PassthroughSubject<Void, Never>()
 
@@ -61,19 +64,26 @@ final class ResourceLoadTracker {
         }
     }
 
+    // MARK: - Resource Load ID extraction
+
+    /// Extracts the unique `resourceLoadID` from a `_WKResourceLoadInfo` object.
+    static func resourceLoadID(from resourceLoadInfo: Any) -> ResourceLoadID? {
+        (resourceLoadInfo as? NSObject)?.value(forKey: "resourceLoadID") as? ResourceLoadID
+    }
+
     // MARK: - Tracking
 
-    func didSendRequest(for url: URL) {
-        resources[url] = .requestSent(Date())
+    func didSendRequest(for id: ResourceLoadID) {
+        resources[id] = .requestSent(Date())
         scheduleStalledCheckIfNeeded()
     }
 
-    func didReceiveResponse(for url: URL) {
-        resources[url] = .responseReceived
+    func didReceiveResponse(for id: ResourceLoadID) {
+        resources[id] = .responseReceived
     }
 
-    func didComplete(for url: URL) {
-        resources.removeValue(forKey: url)
+    func didComplete(for id: ResourceLoadID) {
+        resources.removeValue(forKey: id)
     }
 
     func reset() {
