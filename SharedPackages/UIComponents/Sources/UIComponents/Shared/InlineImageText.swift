@@ -212,7 +212,10 @@ func inlineTextItems(from attributedString: NSAttributedString) -> [InlineTextIt
             items.append(.attributed(attributedString.attributedSubstring(from: range)))
             return
         }
-        guard let image = attachment.platformImage else { return }
+        guard let image = attachment.platformImage else {
+            items.append(.attributed(attributedString.attributedSubstring(from: range)))
+            return
+        }
 
         // Preserve vertical alignment configured on the attachment itself.
         let attributes = attributedString.attributes(at: range.location, effectiveRange: nil)
