@@ -37,7 +37,8 @@ final class AIChatMenu: NSMenu {
     // MARK: - Static items
 
     private lazy var newChatItem: NSMenuItem = {
-        let item = NSMenuItem(title: UserText.aiChatMenuNewChat, action: #selector(newChatTapped), keyEquivalent: "")
+        let item = NSMenuItem(title: UserText.aiChatMenuNewChat, action: #selector(newChatTapped), keyEquivalent: "n")
+        item.keyEquivalentModifierMask = [.option, .command]
         item.target = self
         return item
     }()
