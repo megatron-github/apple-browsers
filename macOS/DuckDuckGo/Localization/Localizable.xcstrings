@@ -26011,6 +26011,54 @@
         }
       }
     },
+    "duckai.menu.delete-all-chats" : {
+      "comment" : "Duck.ai main menu item to delete all chat history",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Delete All Chats..."
+          }
+        }
+      }
+    },
+    "duckai.menu.delete-all-chats.alert-message" : {
+      "comment" : "Message body of the confirmation alert before deleting all Duck.ai chats",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "This will permanently delete all your Duck.ai chat history."
+          }
+        }
+      }
+    },
+    "duckai.menu.delete-all-chats.alert-title" : {
+      "comment" : "Title of the confirmation alert before deleting all Duck.ai chats",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Delete All Duck.ai Chats?"
+          }
+        }
+      }
+    },
+    "duckai.menu.delete-all-chats.confirm-button" : {
+      "comment" : "Confirm button in the Delete All Duck.ai Chats alert",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Delete All"
+          }
+        }
+      }
+    },
     "duckai.menu.new" : {
       "comment" : "Menu item to launch AI Chat",
       "extractionState" : "extracted_with_value",
@@ -26067,6 +26115,66 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Новый чат Duck.ai"
+          }
+        }
+      }
+    },
+    "duckai.menu.new-chat" : {
+      "comment" : "Duck.ai main menu item to start a new chat",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "New Chat"
+          }
+        }
+      }
+    },
+    "duckai.menu.new-image-chat" : {
+      "comment" : "Duck.ai main menu item to start a new image chat",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "New Image Chat"
+          }
+        }
+      }
+    },
+    "duckai.menu.new-voice-chat" : {
+      "comment" : "Duck.ai main menu item to start a new voice chat",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "New Voice Chat"
+          }
+        }
+      }
+    },
+    "duckai.menu.recent-chats" : {
+      "comment" : "Duck.ai main menu section label for recent chat history",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Recent Chats"
+          }
+        }
+      }
+    },
+    "duckai.menu.view-all-chats" : {
+      "comment" : "Duck.ai main menu item to view all chats",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "View All Chats..."
           }
         }
       }
