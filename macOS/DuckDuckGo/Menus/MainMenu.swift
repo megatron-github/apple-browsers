@@ -16,6 +16,7 @@
 //  limitations under the License.
 //
 
+import AIChat
 import BrowserServicesKit
 import Cocoa
 import Common
@@ -1205,12 +1206,12 @@ final class MainMenu: NSMenu {
                 NSApp.delegateTyped.aiChatTabOpener.openAIChatTab(with: .newChat, behavior: .newTab(selected: true))
             },
             openNewVoiceChat: {
-                // TODO: Replace .newChat with the correct voice chat trigger once URL is confirmed with the team
-                NSApp.delegateTyped.aiChatTabOpener.openAIChatTab(with: .newChat, behavior: .newTab(selected: true))
+                let url = AIChatURLParameters.voiceModeURL(from: AIChatRemoteSettings().aiChatURL)
+                NSApp.delegateTyped.aiChatTabOpener.openAIChatTab(with: .url(url), behavior: .newTab(selected: true))
             },
             openNewImageChat: {
-                // TODO: Replace .newChat with the correct image chat trigger once URL is confirmed with the team
-                NSApp.delegateTyped.aiChatTabOpener.openAIChatTab(with: .newChat, behavior: .newTab(selected: true))
+                let url = AIChatURLParameters.imageModeURL(from: AIChatRemoteSettings().aiChatURL)
+                NSApp.delegateTyped.aiChatTabOpener.openAIChatTab(with: .url(url), behavior: .newTab(selected: true))
             },
             openChat: { suggestion in
                 NSApp.delegateTyped.aiChatTabOpener.openAIChatTab(
