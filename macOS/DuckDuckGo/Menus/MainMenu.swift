@@ -16,6 +16,7 @@
 //  limitations under the License.
 //
 
+import AIChat
 import BrowserServicesKit
 import Cocoa
 import Common
@@ -144,7 +145,11 @@ final class MainMenu: NSMenu {
     let toggleDownloadsShortcutMenuItem = NSMenuItem(title: UserText.mainMenuViewShowDownloadsShortcut, action: #selector(MainViewController.toggleDownloadsShortcut), keyEquivalent: "J")
     let toggleAutofillShortcutMenuItem = NSMenuItem(title: UserText.mainMenuViewShowAutofillShortcut, action: #selector(MainViewController.toggleAutofillShortcut), keyEquivalent: "A")
     let toggleBookmarksShortcutMenuItem = NSMenuItem(title: UserText.mainMenuViewShowBookmarksShortcut, action: #selector(MainViewController.toggleBookmarksShortcut), keyEquivalent: "K")
-    var aiChatMenu = NSMenuItem(title: UserText.newAIChatMenuItem, action: #selector(AppDelegate.newAIChat), keyEquivalent: [.option, .command, "n"])
+    private(set) lazy var aiChatMenu: NSMenuItem = MainActor.assumeIsolated {
+        let container = NSMenuItem(title: "Duck.ai")
+        container.submenu = makeAIChatMenu()
+        return container
+    }
     let toggleNetworkProtectionShortcutMenuItem = NSMenuItem(title: UserText.showNetworkProtectionShortcut, action: #selector(MainViewController.toggleNetworkProtectionShortcut), keyEquivalent: "")
 
     // MARK: Window
@@ -180,6 +185,8 @@ final class MainMenu: NSMenu {
     private let dockCustomizer: DockCustomization
     private let defaultBrowserPreferences: DefaultBrowserPreferences
     private let aiChatMenuConfig: AIChatMenuVisibilityConfigurable
+    private let aiChatSuggestionsReader: AIChatSuggestionsReading
+    private let aiChatHistoryCleaner: AIChatHistoryCleaning
     private let internalUserDecider: InternalUserDecider
     private let appearancePreferences: AppearancePreferences
     private let privacyConfigurationManager: PrivacyConfigurationManaging
@@ -203,6 +210,8 @@ final class MainMenu: NSMenu {
          dockCustomizer: DockCustomization,
          defaultBrowserPreferences: DefaultBrowserPreferences,
          aiChatMenuConfig: AIChatMenuVisibilityConfigurable,
+         aiChatSuggestionsReader: AIChatSuggestionsReading,
+         aiChatHistoryCleaner: AIChatHistoryCleaning,
          internalUserDecider: InternalUserDecider,
          appearancePreferences: AppearancePreferences,
          privacyConfigurationManager: PrivacyConfigurationManaging,
@@ -224,6 +233,8 @@ final class MainMenu: NSMenu {
         self.dockCustomizer = dockCustomizer
         self.defaultBrowserPreferences = defaultBrowserPreferences
         self.aiChatMenuConfig = aiChatMenuConfig
+        self.aiChatSuggestionsReader = aiChatSuggestionsReader
+        self.aiChatHistoryCleaner = aiChatHistoryCleaner
         self.historyMenu = HistoryMenu(historyGroupingDataSource: historyCoordinator, recentlyClosedCoordinator: recentlyClosedCoordinator, featureFlagger: featureFlagger)
         self.configurationURLProvider = configurationURLProvider
         self.contentScopePreferences = contentScopePreferences
@@ -239,6 +250,7 @@ final class MainMenu: NSMenu {
             buildEditMenu()
             buildViewMenu()
             buildHistoryMenu()
+            aiChatMenu
             buildBookmarksMenu()
             buildWindowMenu()
             buildDebugMenu(featureFlagger: featureFlagger, historyCoordinator: historyCoordinator)
@@ -299,8 +311,6 @@ final class MainMenu: NSMenu {
                 newWindowMenuItem
                 newBurnerWindowMenuItem
             }
-
-            aiChatMenu
 
             openFileMenuItem
             openLocationMenuItem
@@ -1188,6 +1198,45 @@ final class MainMenu: NSMenu {
 
         self.loggingMenu = menu
         return menu
+    }
+
+    @MainActor private func makeAIChatMenu() -> AIChatMenu {
+        let actions = AIChatMenu.Actions(
+            openNewChat: {
+                NSApp.delegateTyped.aiChatTabOpener.openAIChatTab(with: .newChat, behavior: .newTab(selected: true))
+            },
+            openNewVoiceChat: {
+                let url = AIChatURLParameters.voiceModeURL(from: AIChatRemoteSettings().aiChatURL)
+                NSApp.delegateTyped.aiChatTabOpener.openAIChatTab(with: .url(url), behavior: .newTab(selected: true))
+            },
+            openNewImageChat: {
+                let url = AIChatURLParameters.imageModeURL(from: AIChatRemoteSettings().aiChatURL)
+                NSApp.delegateTyped.aiChatTabOpener.openAIChatTab(with: .url(url), behavior: .newTab(selected: true))
+            },
+            openChat: { suggestion in
+                NSApp.delegateTyped.aiChatTabOpener.openAIChatTab(
+                    with: .existingChat(chatId: suggestion.chatId),
+                    behavior: .currentTab
+                )
+            },
+            viewAllChats: {
+                // TODO: Replace .newChat with the correct view-all-chats trigger once URL is confirmed with the team
+                NSApp.delegateTyped.aiChatTabOpener.openAIChatTab(with: .newChat, behavior: .newTab(selected: true))
+            },
+            deleteAllChats: { [weak self] in
+                guard let self else { return }
+                if case .failure(let error) = await aiChatHistoryCleaner.cleanAIChatHistory() {
+                    Logger.aiChat.error("Failed to delete all Duck.ai chats: \(error.localizedDescription)")
+                    return
+                }
+                for windowController in Application.appDelegate.windowControllersManager.mainWindowControllers {
+                    for tab in windowController.mainViewController.tabCollectionViewModel.tabs where tab.url?.isDuckAIURL == true {
+                        tab.reload()
+                    }
+                }
+            }
+        )
+        return AIChatMenu(suggestionsReader: aiChatSuggestionsReader, actions: actions)
     }
 
     private func setupAIChatMenu() {
