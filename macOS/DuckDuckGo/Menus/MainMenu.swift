@@ -1227,6 +1227,12 @@ final class MainMenu: NSMenu {
                 guard let self else { return }
                 if case .failure(let error) = await aiChatHistoryCleaner.cleanAIChatHistory() {
                     Logger.aiChat.error("Failed to delete all Duck.ai chats: \(error.localizedDescription)")
+                    return
+                }
+                for windowController in Application.appDelegate.windowControllersManager.mainWindowControllers {
+                    for tab in windowController.mainViewController.tabCollectionViewModel.tabs where tab.url?.isDuckAIURL == true {
+                        tab.reload()
+                    }
                 }
             }
         )
