@@ -3624,6 +3624,8 @@
 		BBE9A9AC2E9D1DED00E573AA /* MockWinBackOfferVisibilityManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBE9A9AA2E9D1DED00E573AA /* MockWinBackOfferVisibilityManager.swift */; };
 		BBF17D1A2F7B1309004AFCF4 /* AIChatMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBF17D192F7B1309004AFCF4 /* AIChatMenu.swift */; };
 		BBF17D1B2F7B1309004AFCF4 /* AIChatMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBF17D192F7B1309004AFCF4 /* AIChatMenu.swift */; };
+		BBF17D202F7B4D33004AFCF4 /* AIChatMenuTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBF17D1F2F7B4D33004AFCF4 /* AIChatMenuTests.swift */; };
+		BBF17D212F7B4D33004AFCF4 /* AIChatMenuTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBF17D1F2F7B4D33004AFCF4 /* AIChatMenuTests.swift */; };
 		BBF667FC2EE33E74003B9401 /* HomePageSetUpDependencies.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBF667FB2EE33E74003B9401 /* HomePageSetUpDependencies.swift */; };
 		BBF667FD2EE33E74003B9401 /* HomePageSetUpDependencies.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBF667FB2EE33E74003B9401 /* HomePageSetUpDependencies.swift */; };
 		BBFB727F2C48047C0088884C /* SortBookmarksViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBFB727E2C48047C0088884C /* SortBookmarksViewModel.swift */; };
@@ -6375,6 +6377,7 @@
 		BBE948CF2D6FD10C00FAC581 /* DefaultBrowserAndDockPromptStoring.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefaultBrowserAndDockPromptStoring.swift; sourceTree = "<group>"; };
 		BBE9A9AA2E9D1DED00E573AA /* MockWinBackOfferVisibilityManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockWinBackOfferVisibilityManager.swift; sourceTree = "<group>"; };
 		BBF17D192F7B1309004AFCF4 /* AIChatMenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIChatMenu.swift; sourceTree = "<group>"; };
+		BBF17D1F2F7B4D33004AFCF4 /* AIChatMenuTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIChatMenuTests.swift; sourceTree = "<group>"; };
 		BBF667FB2EE33E74003B9401 /* HomePageSetUpDependencies.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomePageSetUpDependencies.swift; sourceTree = "<group>"; };
 		BBFB727E2C48047C0088884C /* SortBookmarksViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SortBookmarksViewModel.swift; sourceTree = "<group>"; };
 		BBFD526D2E12FB730043B00C /* VisualizeFireSettingsDecider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisualizeFireSettingsDecider.swift; sourceTree = "<group>"; };
@@ -7568,6 +7571,7 @@
 		31F25EFD2CC3C9F9002F9084 /* AIChat */ = {
 			isa = PBXGroup;
 			children = (
+				BBF17D1F2F7B4D33004AFCF4 /* AIChatMenuTests.swift */,
 				37AA017E2E2164A500844427 /* AIChatUserScriptHandlerTests.swift */,
 				31A80B0C2EE88F06004DF7FA /* AIChatTogglePopoverCoordinatorTests.swift */,
 				3135647D2D9EBB9900BF4B5D /* AIChatAddressBarPromptExtractorTests.swift */,
@@ -15883,6 +15887,7 @@
 				3706FE3A293F661700E42796 /* MockVariantManager.swift in Sources */,
 				BB349A4F2E3B8B0E0028AFE1 /* MockDefaultBrowserProvider.swift in Sources */,
 				3706FE3C293F661700E42796 /* FireproofDomainsStoreMock.swift in Sources */,
+				BBF17D212F7B4D33004AFCF4 /* AIChatMenuTests.swift in Sources */,
 				317B39DB2ED9CBD1001B5600 /* AIChatOmnibarControllerTests.swift in Sources */,
 				56A054482C22536A007D8FAB /* CapturingOnboardingActionsManager.swift in Sources */,
 				3706FE3D293F661700E42796 /* DataEncryptionTests.swift in Sources */,
@@ -18060,6 +18065,7 @@
 				7B1522B92DE9D19600887371 /* MockLoginItemsManager.swift in Sources */,
 				CBDD5DE329A67F2700832877 /* MockConfigurationStore.swift in Sources */,
 				9F3910692B68D87B00CB5112 /* ProgressExtensionTests.swift in Sources */,
+				BBF17D202F7B4D33004AFCF4 /* AIChatMenuTests.swift in Sources */,
 				9FFBEE662DDD83C20058B11A /* DefaultBrowserAndDockPromptStorageTests.swift in Sources */,
 				B63ED0DC26AE7B1E00A9DAD1 /* WebViewMock.swift in Sources */,
 				1D39F7282DCA2C9200F258F0 /* InitialWindowFrameProviderTests.swift in Sources */,

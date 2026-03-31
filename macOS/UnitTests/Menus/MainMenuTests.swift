@@ -16,6 +16,7 @@
 //  limitations under the License.
 //
 
+import AIChat
 import Combine
 import PrivacyConfig
 import PrivacyConfigTestsUtils
@@ -124,6 +125,8 @@ class MainMenuTests: XCTestCase {
             dockCustomizer: dockCustomizer,
             defaultBrowserPreferences: DefaultBrowserPreferences(defaultBrowserProvider: MockDefaultBrowserProvider()),
             aiChatMenuConfig: DummyAIChatConfig(),
+            aiChatSuggestionsReader: DummyAIChatSuggestionsReader(),
+            aiChatHistoryCleaner: DummyAIChatHistoryCleaner(),
             internalUserDecider: MockInternalUserDecider(),
             appearancePreferences: appearancePreferences,
             privacyConfigurationManager: MockPrivacyConfigurationManager(),
@@ -156,6 +159,8 @@ class MainMenuTests: XCTestCase {
             dockCustomizer: dockCustomizer,
             defaultBrowserPreferences: DefaultBrowserPreferences(defaultBrowserProvider: MockDefaultBrowserProvider()),
             aiChatMenuConfig: DummyAIChatConfig(),
+            aiChatSuggestionsReader: DummyAIChatSuggestionsReader(),
+            aiChatHistoryCleaner: DummyAIChatHistoryCleaner(),
             internalUserDecider: MockInternalUserDecider(),
             appearancePreferences: appearancePreferences,
             privacyConfigurationManager: MockPrivacyConfigurationManager(),
@@ -190,6 +195,8 @@ class MainMenuTests: XCTestCase {
             dockCustomizer: dockCustomizer,
             defaultBrowserPreferences: DefaultBrowserPreferences(defaultBrowserProvider: MockDefaultBrowserProvider()),
             aiChatMenuConfig: DummyAIChatConfig(),
+            aiChatSuggestionsReader: DummyAIChatSuggestionsReader(),
+            aiChatHistoryCleaner: DummyAIChatHistoryCleaner(),
             internalUserDecider: MockInternalUserDecider(),
             appearancePreferences: appearancePreferences,
             privacyConfigurationManager: MockPrivacyConfigurationManager(),
@@ -223,6 +230,8 @@ class MainMenuTests: XCTestCase {
             dockCustomizer: dockCustomizer,
             defaultBrowserPreferences: DefaultBrowserPreferences(defaultBrowserProvider: MockDefaultBrowserProvider()),
             aiChatMenuConfig: DummyAIChatConfig(),
+            aiChatSuggestionsReader: DummyAIChatSuggestionsReader(),
+            aiChatHistoryCleaner: DummyAIChatHistoryCleaner(),
             internalUserDecider: MockInternalUserDecider(),
             appearancePreferences: appearancePreferences,
             privacyConfigurationManager: MockPrivacyConfigurationManager(),
@@ -258,6 +267,8 @@ class MainMenuTests: XCTestCase {
             dockCustomizer: DockCustomizerMock(),
             defaultBrowserPreferences: .init(defaultBrowserProvider: defaultBrowserProvider),
             aiChatMenuConfig: DummyAIChatConfig(),
+            aiChatSuggestionsReader: DummyAIChatSuggestionsReader(),
+            aiChatHistoryCleaner: DummyAIChatHistoryCleaner(),
             internalUserDecider: MockInternalUserDecider(),
             appearancePreferences: appearancePreferences,
             privacyConfigurationManager: MockPrivacyConfigurationManager(),
@@ -291,6 +302,8 @@ class MainMenuTests: XCTestCase {
             dockCustomizer: DockCustomizerMock(),
             defaultBrowserPreferences: .init(defaultBrowserProvider: defaultBrowserProvider),
             aiChatMenuConfig: DummyAIChatConfig(),
+            aiChatSuggestionsReader: DummyAIChatSuggestionsReader(),
+            aiChatHistoryCleaner: DummyAIChatHistoryCleaner(),
             internalUserDecider: MockInternalUserDecider(),
             appearancePreferences: appearancePreferences,
             privacyConfigurationManager: MockPrivacyConfigurationManager(),
@@ -324,6 +337,8 @@ class MainMenuTests: XCTestCase {
             dockCustomizer: DockCustomizerMock(),
             defaultBrowserPreferences: DefaultBrowserPreferences(defaultBrowserProvider: MockDefaultBrowserProvider()),
             aiChatMenuConfig: DummyAIChatConfig(),
+            aiChatSuggestionsReader: DummyAIChatSuggestionsReader(),
+            aiChatHistoryCleaner: DummyAIChatHistoryCleaner(),
             internalUserDecider: MockInternalUserDecider(),
             appearancePreferences: appearancePreferences,
             privacyConfigurationManager: MockPrivacyConfigurationManager(),
@@ -347,7 +362,7 @@ class MainMenuTests: XCTestCase {
     // MARK: - AI Chat
 
     @MainActor
-    func testMainMenuInitializedWithFalseAiChatFlag_ThenAiChatIsNotVisible() throws {
+    func testDuckAIMenuIsHidden_whenShouldDisplayApplicationMenuShortcutIsFalse() throws {
         // GIVEN
         let aiChatConfig = DummyAIChatConfig()
         let sut = MainMenu(
@@ -359,6 +374,8 @@ class MainMenuTests: XCTestCase {
             dockCustomizer: DockCustomizerMock(),
             defaultBrowserPreferences: DefaultBrowserPreferences(defaultBrowserProvider: MockDefaultBrowserProvider()),
             aiChatMenuConfig: aiChatConfig,
+            aiChatSuggestionsReader: DummyAIChatSuggestionsReader(),
+            aiChatHistoryCleaner: DummyAIChatHistoryCleaner(),
             internalUserDecider: MockInternalUserDecider(),
             appearancePreferences: appearancePreferences,
             privacyConfigurationManager: MockPrivacyConfigurationManager(),
@@ -370,18 +387,16 @@ class MainMenuTests: XCTestCase {
             subscriptionManager: SubscriptionManagerMock()
         )
 
-        let fileMenu = try XCTUnwrap(sut.item(withTitle: UserText.mainMenuFile))
-
         // WHEN
-        let aiChatMenu = fileMenu.submenu?.item(withTitle: UserText.newAIChatMenuItem)
+        let aiChatMenu = sut.item(withTitle: "Duck.ai")
 
         // THEN
-        XCTAssertNotNil(aiChatMenu, "AI Chat menu item should exist in the file menu.")
-        XCTAssertTrue(aiChatMenu?.isHidden == true, "AI Chat menu item should be hidden when the AI chat flag is false.")
+        XCTAssertNotNil(aiChatMenu, "Duck.ai menu item should exist in the menu bar.")
+        XCTAssertTrue(aiChatMenu?.isHidden == true, "Duck.ai menu item should be hidden when the AI chat flag is false.")
     }
 
     @MainActor
-    func testMainMenuInitializedWithTrueAiChatFlag_ThenAiChatIsVisible() throws {
+    func testDuckAIMenuIsVisible_whenShouldDisplayApplicationMenuShortcutIsTrue() throws {
         // GIVEN
         let aiChatConfig = DummyAIChatConfig()
         aiChatConfig.shouldDisplayApplicationMenuShortcut = true
@@ -396,6 +411,8 @@ class MainMenuTests: XCTestCase {
             dockCustomizer: DockCustomizerMock(),
             defaultBrowserPreferences: DefaultBrowserPreferences(defaultBrowserProvider: MockDefaultBrowserProvider()),
             aiChatMenuConfig: aiChatConfig,
+            aiChatSuggestionsReader: DummyAIChatSuggestionsReader(),
+            aiChatHistoryCleaner: DummyAIChatHistoryCleaner(),
             internalUserDecider: MockInternalUserDecider(),
             appearancePreferences: appearancePreferences,
             privacyConfigurationManager: MockPrivacyConfigurationManager(),
@@ -407,14 +424,12 @@ class MainMenuTests: XCTestCase {
             subscriptionManager: SubscriptionManagerMock()
         )
 
-        let fileMenu = try XCTUnwrap(sut.item(withTitle: UserText.mainMenuFile))
-
         // WHEN
-        let aiChatMenu = fileMenu.submenu?.item(withTitle: UserText.newAIChatMenuItem)
+        let aiChatMenu = sut.item(withTitle: "Duck.ai")
 
         // THEN
-        XCTAssertNotNil(aiChatMenu, "AI Chat menu item should exist in the file menu.")
-        XCTAssertFalse(aiChatMenu?.isHidden ?? true, "AI Chat menu item should be visible when the AI chat flag is true.")
+        XCTAssertNotNil(aiChatMenu, "Duck.ai menu item should exist in the menu bar.")
+        XCTAssertFalse(aiChatMenu?.isHidden ?? true, "Duck.ai menu item should be visible when the AI chat flag is true.")
     }
 
     @MainActor
@@ -430,6 +445,8 @@ class MainMenuTests: XCTestCase {
             dockCustomizer: DockCustomizerMock(),
             defaultBrowserPreferences: DefaultBrowserPreferences(defaultBrowserProvider: MockDefaultBrowserProvider()),
             aiChatMenuConfig: DummyAIChatConfig(),
+            aiChatSuggestionsReader: DummyAIChatSuggestionsReader(),
+            aiChatHistoryCleaner: DummyAIChatHistoryCleaner(),
             internalUserDecider: MockInternalUserDecider(),
             appearancePreferences: appearancePreferences,
             privacyConfigurationManager: MockPrivacyConfigurationManager(),
@@ -458,6 +475,8 @@ class MainMenuTests: XCTestCase {
             dockCustomizer: DockCustomizerMock(),
             defaultBrowserPreferences: DefaultBrowserPreferences(defaultBrowserProvider: MockDefaultBrowserProvider()),
             aiChatMenuConfig: DummyAIChatConfig(),
+            aiChatSuggestionsReader: DummyAIChatSuggestionsReader(),
+            aiChatHistoryCleaner: DummyAIChatHistoryCleaner(),
             internalUserDecider: MockInternalUserDecider(),
             appearancePreferences: appearancePreferences,
             privacyConfigurationManager: MockPrivacyConfigurationManager(),
@@ -489,6 +508,8 @@ class MainMenuTests: XCTestCase {
             dockCustomizer: DockCustomizerMock(),
             defaultBrowserPreferences: DefaultBrowserPreferences(defaultBrowserProvider: MockDefaultBrowserProvider()),
             aiChatMenuConfig: DummyAIChatConfig(),
+            aiChatSuggestionsReader: DummyAIChatSuggestionsReader(),
+            aiChatHistoryCleaner: DummyAIChatHistoryCleaner(),
             internalUserDecider: MockInternalUserDecider(),
             appearancePreferences: appearancePreferences,
             privacyConfigurationManager: MockPrivacyConfigurationManager(),
@@ -517,6 +538,8 @@ class MainMenuTests: XCTestCase {
             dockCustomizer: DockCustomizerMock(),
             defaultBrowserPreferences: DefaultBrowserPreferences(defaultBrowserProvider: MockDefaultBrowserProvider()),
             aiChatMenuConfig: DummyAIChatConfig(),
+            aiChatSuggestionsReader: DummyAIChatSuggestionsReader(),
+            aiChatHistoryCleaner: DummyAIChatHistoryCleaner(),
             internalUserDecider: MockInternalUserDecider(),
             appearancePreferences: appearancePreferences,
             privacyConfigurationManager: MockPrivacyConfigurationManager(),
@@ -633,6 +656,18 @@ class LazyBookmarkFolderMenuDelegateTests: XCTestCase {
         XCTAssertEqual(subMenu?.items.count, 1, "Submenu should contain exactly one placeholder item")
         XCTAssertNotNil(subMenu?.delegate, "Submenu should have a delegate for lazy population")
     }
+}
+
+private final class DummyAIChatSuggestionsReader: AIChatSuggestionsReading {
+    var maxHistoryCount: Int = 0
+    func fetchSuggestions(query: String?, maxChats: Int) async -> (pinned: [AIChatSuggestion], recent: [AIChatSuggestion]) { ([], []) }
+    func tearDown() {}
+}
+
+private final class DummyAIChatHistoryCleaner: AIChatHistoryCleaning {
+    var shouldDisplayCleanAIChatHistoryOption: Bool = false
+    var shouldDisplayCleanAIChatHistoryOptionPublisher: AnyPublisher<Bool, Never> { Just(false).eraseToAnyPublisher() }
+    @MainActor func cleanAIChatHistory() async -> Result<Void, Error> { .success(()) }
 }
 
 class DummyAIChatConfig: AIChatMenuVisibilityConfigurable {
