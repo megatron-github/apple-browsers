@@ -403,7 +403,7 @@ final class DataBrokerRunCustomJSONViewModel: ObservableObject {
             dataBroker: dataBroker,
             profileQuery: scanResult.profileQuery,
             scanJobData: ScanJobData(
-                brokerId: DebugHelper.stableId(for: scanResult.dataBroker),
+                brokerId: DebugHelper.stableId(for: dataBroker),
                 profileQueryId: DebugHelper.stableId(for: scanResult.profileQuery),
                 historyEvents: [HistoryEvent]()
             )
