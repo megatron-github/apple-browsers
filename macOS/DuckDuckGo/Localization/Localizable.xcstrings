@@ -26024,13 +26024,13 @@
       }
     },
     "duckai.menu.delete-all-chats.alert-message" : {
-      "comment" : "Message body of the confirmation alert before deleting all Duck.ai chats",
+      "comment" : "Message body of the confirmation dialog before deleting all Duck.ai chats",
       "extractionState" : "extracted_with_value",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "This will permanently delete all your Duck.ai chat history."
+            "value" : "This will delete all your chats. This cannot be undone."
           }
         }
       }
@@ -26054,7 +26054,31 @@
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Delete All"
+            "value" : "Delete Chats"
+          }
+        }
+      }
+    },
+    "duckai.menu.delete-all-chats.dialog-title" : {
+      "comment" : "Title of the custom delete dialog when there are 2 or fewer chats to delete",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Delete all chats?"
+          }
+        }
+      }
+    },
+    "duckai.menu.delete-all-chats.dialog-title-count" : {
+      "comment" : "Title of the custom delete dialog showing the number of chats to be deleted (shown when count > 2)",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Delete %d chats?"
           }
         }
       }

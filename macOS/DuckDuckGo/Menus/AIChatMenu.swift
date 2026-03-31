@@ -20,6 +20,7 @@ import AIChat
 import AppKit
 import DesignResourcesKitIcons
 import PixelKit
+import SwiftUI
 
 @MainActor
 final class AIChatMenu: NSMenu {
@@ -177,18 +178,14 @@ final class AIChatMenu: NSMenu {
     }
 
     @objc private func deleteAllChatsTapped() {
-        let alert = NSAlert()
-        alert.messageText = UserText.aiChatMenuDeleteAllChatsAlertTitle
-        alert.informativeText = UserText.aiChatMenuDeleteAllChatsAlertMessage
-        alert.addButton(withTitle: UserText.aiChatMenuDeleteAllChatsConfirmButton)
-        alert.addButton(withTitle: UserText.cancel)
-        alert.alertStyle = .warning
-
-        guard alert.runModal() == .alertFirstButtonReturn else { return }
-
-        PixelKit.fire(AIChatPixel.aiChatDeleteAllChatsMainMenu, frequency: .dailyAndStandard)
-        Task { @MainActor in
-            await actions.deleteAllChats()
+        var dialog = AIChatDeleteChatsDialog(chatCount: chatItems.count)
+        dialog.confirmed = { [weak self] in
+            guard let self else { return }
+            PixelKit.fire(AIChatPixel.aiChatDeleteAllChatsMainMenu, frequency: .dailyAndStandard)
+            Task { @MainActor in
+                await self.actions.deleteAllChats()
+            }
         }
+        dialog.show()
     }
 }
