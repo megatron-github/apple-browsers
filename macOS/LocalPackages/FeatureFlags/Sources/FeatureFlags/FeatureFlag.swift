@@ -310,6 +310,10 @@ public enum FeatureFlag: String, CaseIterable {
     /// Enables the Duck.ai top-level main menu shortcut (macOS only, disabled by default)
     /// https://app.asana.com/1/137249556945/project/1204006570077678/task/1213833143996470
     case aiChatMainMenuShortcut
+
+    /// Enables the Duck.ai submenu in the more options (hamburger) menu (macOS only, disabled by default)
+    /// https://app.asana.com/1/137249556945/project/1204006570077678/task/1213833143996470
+    case aiChatMoreOptionsMenuShortcut
 }
 
 extension FeatureFlag: FeatureFlagDescribing {
@@ -350,7 +354,8 @@ extension FeatureFlag: FeatureFlagDescribing {
              .aiChatSidebarFloating,
              .semaphoreAlwaysVisible,
              .aiChatRemoveSuggestion,
-             .aiChatMainMenuShortcut:
+             .aiChatMainMenuShortcut,
+             .aiChatMoreOptionsMenuShortcut:
             .internalOnly
         default:
             .disabled
@@ -449,6 +454,7 @@ extension FeatureFlag: FeatureFlagDescribing {
                 .tabAnimations,
                 .aiChatRemoveSuggestion,
                 .aiChatMainMenuShortcut,
+                .aiChatMoreOptionsMenuShortcut,
                 .lazyMenuRebuild,
                 .websitesHistoryFirstTimeQuitSurvey,
                 .addToDockAppStore,
@@ -643,6 +649,8 @@ extension FeatureFlag: FeatureFlagDescribing {
             return .remoteReleasable(.subfeature(AIChatSubfeature.removeSuggestion))
         case .aiChatMainMenuShortcut:
             return .remoteReleasable(.subfeature(AIChatSubfeature.mainMenuShortcut))
+        case .aiChatMoreOptionsMenuShortcut:
+            return .remoteReleasable(.subfeature(AIChatSubfeature.moreOptionsMenuShortcut))
         case .screenTimeCleaning:
             return .remoteReleasable(.subfeature(MacOSBrowserConfigSubfeature.screenTimeCleaning))
         }

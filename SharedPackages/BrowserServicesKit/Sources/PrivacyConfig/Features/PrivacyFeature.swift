@@ -422,6 +422,9 @@ public enum AIChatSubfeature: String, Equatable, PrivacySubfeature {
 
     /// Enables the Duck.ai top-level main menu shortcut (macOS only)
     case mainMenuShortcut
+
+    /// Enables the Duck.ai submenu in the more options (hamburger) menu (macOS only)
+    case moreOptionsMenuShortcut
 }
 
 public enum HtmlNewTabPageSubfeature: String, Equatable, PrivacySubfeature {
