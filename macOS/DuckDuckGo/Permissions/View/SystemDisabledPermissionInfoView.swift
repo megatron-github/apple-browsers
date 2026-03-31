@@ -75,7 +75,7 @@ struct SystemDisabledPermissionInfoView: View {
     private var linkSeparator: String {
         switch permissionType {
         case .notification:
-            return "\n"
+            return warningText.contains("\n") ? "" : "\n"
         case .geolocation:
             return ""  // Location string already has trailing space
         default:

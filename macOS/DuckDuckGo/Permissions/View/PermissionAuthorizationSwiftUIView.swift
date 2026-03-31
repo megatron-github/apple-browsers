@@ -560,7 +560,7 @@ struct PermissionAuthorizationSwiftUIView: View {
         (Text(permissionType.systemPermissionDisabledTextStandalone)
             .font(.system(size: 12))
             .foregroundColor(Color(designSystemColor: .textSecondary))
-        + Text(verbatim: permissionType == .notification ? "\n" : " ")
+        + Text(verbatim: notificationStandaloneLinkSeparator)
         + Text(permissionType.systemSettingsLinkText)
             .font(.system(size: 12))
             .foregroundColor(Color(designSystemColor: .textLink)))
@@ -582,6 +582,13 @@ struct PermissionAuthorizationSwiftUIView: View {
             appActiveCancellable?.cancel()
             appActiveCancellable = nil
         }
+    }
+
+    private var notificationStandaloneLinkSeparator: String {
+        guard permissionType == .notification else {
+            return " "
+        }
+        return permissionType.systemPermissionDisabledTextStandalone.contains("\n") ? "" : "\n"
     }
 
     // MARK: - Standard Permission View
