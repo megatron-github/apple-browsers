@@ -37,11 +37,7 @@ public enum ContextualOnboardingBackgroundType {
 
     var alignment: Alignment {
         switch self {
-        case .tryASearch:
-            return .bottomLeading
-        case .tryASearchDuckAIExperimentFire:
-            return .bottomTrailing
-        case .tryASearchCompleted, .tryVisitingASiteNTP, .trackers, .fireDialog:
+        case .tryASearch, .tryASearchDuckAIExperimentFire, .tryASearchCompleted, .tryVisitingASiteNTP, .trackers, .fireDialog:
             return .bottomTrailing
         case .endOfJourneyNTPChat:
             return .bottomLeading
