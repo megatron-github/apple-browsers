@@ -95,6 +95,7 @@ final class MainMenu: NSMenu {
     let closeAllWindowsMenuItem = NSMenuItem(title: UserText.mainMenuFileCloseAllWindows, action: #selector(AppDelegate.closeAllWindows), keyEquivalent: [.option, .command, "W"])
     let closeTabMenuItem = NSMenuItem(title: UserText.closeTab, action: #selector(MainViewController.closeTab), keyEquivalent: "w")
     let importBrowserDataMenuItem = NSMenuItem(title: UserText.mainMenuFileImportBookmarksandPasswords, action: #selector(AppDelegate.openImportBrowserDataWindow))
+    let newAIChatFileMenuItem = NSMenuItem(title: UserText.newAIChatMenuItem, action: #selector(AppDelegate.newAIChat), keyEquivalent: "")
 
     @MainActor
     lazy var sharingMenu = SharingMenu(title: UserText.shareMenuItem, location: .mainMenu, delegate: self)
@@ -311,6 +312,9 @@ final class MainMenu: NSMenu {
                 newWindowMenuItem
                 newBurnerWindowMenuItem
             }
+
+            newAIChatFileMenuItem
+            NSMenuItem.separator()
 
             openFileMenuItem
             openLocationMenuItem
@@ -1240,7 +1244,9 @@ final class MainMenu: NSMenu {
     }
 
     private func setupAIChatMenu() {
-        aiChatMenu.isHidden = !aiChatMenuConfig.shouldDisplayApplicationMenuShortcut
+        let showTopLevelMenu = aiChatMenuConfig.shouldDisplayApplicationMenuShortcut
+        aiChatMenu.isHidden = !showTopLevelMenu
+        newAIChatFileMenuItem.isHidden = !aiChatMenuConfig.shouldDisplayAnyAIChatFeature || showTopLevelMenu
     }
 
     private func updateInternalUserItem() {

@@ -465,6 +465,57 @@ class MainMenuTests: XCTestCase {
     }
 
     @MainActor
+    func testNewAIChatFileMenuItemIsHidden_whenDuckAIMenuIsVisible() throws {
+        // GIVEN
+        let aiChatConfig = DummyAIChatConfig()
+        aiChatConfig.shouldDisplayAnyAIChatFeature = true
+        aiChatConfig.shouldDisplayApplicationMenuShortcut = true
+        let sut = makeMainMenu(aiChatConfig: aiChatConfig)
+
+        // WHEN
+        let fileMenu = try XCTUnwrap(sut.item(withTitle: UserText.mainMenuFile)?.submenu)
+        let item = fileMenu.item(withTitle: UserText.newAIChatMenuItem)
+
+        // THEN
+        XCTAssertNotNil(item)
+        XCTAssertTrue(item?.isHidden == true)
+    }
+
+    @MainActor
+    func testNewAIChatFileMenuItemIsVisible_whenDuckAIMenuIsHiddenAndAIChatIsEnabled() throws {
+        // GIVEN
+        let aiChatConfig = DummyAIChatConfig()
+        aiChatConfig.shouldDisplayAnyAIChatFeature = true
+        aiChatConfig.shouldDisplayApplicationMenuShortcut = false
+        let sut = makeMainMenu(aiChatConfig: aiChatConfig)
+
+        // WHEN
+        let fileMenu = try XCTUnwrap(sut.item(withTitle: UserText.mainMenuFile)?.submenu)
+        let item = fileMenu.item(withTitle: UserText.newAIChatMenuItem)
+
+        // THEN
+        XCTAssertNotNil(item)
+        XCTAssertFalse(item?.isHidden ?? true)
+    }
+
+    @MainActor
+    func testNewAIChatFileMenuItemIsHidden_whenAIChatIsDisabled() throws {
+        // GIVEN
+        let aiChatConfig = DummyAIChatConfig()
+        aiChatConfig.shouldDisplayAnyAIChatFeature = false
+        aiChatConfig.shouldDisplayApplicationMenuShortcut = false
+        let sut = makeMainMenu(aiChatConfig: aiChatConfig)
+
+        // WHEN
+        let fileMenu = try XCTUnwrap(sut.item(withTitle: UserText.mainMenuFile)?.submenu)
+        let item = fileMenu.item(withTitle: UserText.newAIChatMenuItem)
+
+        // THEN
+        XCTAssertNotNil(item)
+        XCTAssertTrue(item?.isHidden == true)
+    }
+
+    @MainActor
     func testMainMenuShowsFireWindowFirst_whenOpenFireWindowByDefaultIsEnabled() throws {
         let isFireWindowDefault = true
 
