@@ -257,14 +257,16 @@ extension DebugScreensViewModel {
                             onboardingPixelReporter: OnboardingPixelReporter(),
                             systemSettingsPiPTutorialManager: d.systemSettingsPiPTutorialManager,
                             daxDialogsManager: d.daxDialogManager,
-                            syncAutoRestoreHandler: d.syncAutoRestoreHandler
+                            syncAutoRestoreHandler: d.syncAutoRestoreHandler,
+                            onboardingManager: OnboardingManager()
                         )
                     } else {
                         OnboardingIntroViewController.legacy(
                             onboardingPixelReporter: OnboardingPixelReporter(),
                             systemSettingsPiPTutorialManager: d.systemSettingsPiPTutorialManager,
                             daxDialogsManager: d.daxDialogManager,
-                            syncAutoRestoreHandler: d.syncAutoRestoreHandler
+                            syncAutoRestoreHandler: d.syncAutoRestoreHandler,
+                            onboardingManager: OnboardingManager()
                         )
                     }
                     controller.delegate = capturedController

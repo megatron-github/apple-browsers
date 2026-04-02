@@ -33,6 +33,7 @@ import DataBrokerProtection_iOS
 import PrivacyStats
 import Networking
 import WebExtensions
+import Onboarding
 
 @MainActor
 protocol URLHandling: AnyObject {
@@ -85,6 +86,8 @@ final class MainCoordinator {
     private var webExtensionLoadTask: Task<Void, Never>?
     private var privacyConfigurationManager: PrivacyConfigurationManaging?
 
+    private let onboardingManager: OnboardingFlowEvaluating
+
     init(privacyConfigurationManager: PrivacyConfigurationManaging,
          syncService: SyncService,
          contentBlockingService: ContentBlockingService,
@@ -116,7 +119,8 @@ final class MainCoordinator {
          whatsNewRepository: WhatsNewMessageRepository,
          sharedSecureVault: (any AutofillSecureVault)? = nil,
          syncAutoRestoreDecisionManager: SyncAutoRestoreDecisionManaging = AppDependencyProvider.shared.syncAutoRestoreDecisionManager,
-         wideEvent: WideEventManaging
+         wideEvent: WideEventManaging,
+         onboardingManager: OnboardingManaging
     ) throws {
         self.subscriptionManager = subscriptionManager
         self.featureFlagger = featureFlagger
@@ -151,6 +155,7 @@ final class MainCoordinator {
             onboardingSearchExperienceProvider: OnboardingSearchExperience()
         )
         self.privacyStats = PrivacyStats(databaseProvider: PrivacyStatsDatabase())
+        self.onboardingManager = onboardingManager
         let toggleModeStorage: ToggleModeStoring = ToggleModeStorage()
         tabManager = TabManager(tabsModelProvider: tabsModelProvider,
                                 previewsSource: previewsSource,
@@ -213,6 +218,7 @@ final class MainCoordinator {
             privacyConfigurationManager: privacyConfigurationManager,
             isStillOnboarding: { daxDialogsManager.isStillOnboarding() }
         )
+        
         controller = MainViewController(privacyConfigurationManager: privacyConfigurationManager,
                                         bookmarksDatabase: bookmarksDatabase,
                                         historyManager: historyManager,
@@ -260,7 +266,8 @@ final class MainCoordinator {
                                         privacyStats: privacyStats,
                                         whatsNewRepository: whatsNewRepository,
                                         darkReaderFeatureSettings: darkReaderFeatureSettings,
-                                        toggleModeStorage: toggleModeStorage)
+                                        toggleModeStorage: toggleModeStorage,
+                                        onboardingManager: onboardingManager)
 
         setupWebExtensions(privacyConfigurationManager: privacyConfigurationManager)
 
@@ -525,9 +532,16 @@ final class MainCoordinator {
 extension MainCoordinator: URLHandling {
 
     func shouldProcessDeepLink(_ url: URL) -> Bool {
+        Logger.lifecycle.debug("~~~ \(#function, privacy: .public)")
+
+        // Ignore Onboarding deeplinks, they are used from Custom Product Page to define a tailored onboarding experience.
+        guard !onboardingManager.isOnboardingURL(url) else {
+            return false
+        }
+
         // Ignore deeplinks if onboarding is active
         // as well as handle email sign-up deep link separately
-        !controller.needsToShowOnboardingIntro() && !handleEmailSignUpDeepLink(url)
+        return !controller.needsToShowOnboardingIntro() && !handleEmailSignUpDeepLink(url)
     }
 
     func handleURL(_ url: URL) {
@@ -546,6 +560,7 @@ extension MainCoordinator: URLHandling {
     }
 
     private func handleAppDeepLink(url: URL, application: UIApplication = UIApplication.shared) -> Bool {
+        Logger.lifecycle.debug("~~~ \(#function, privacy: .public)")
         controller.currentTab?.aiChatContextualSheetCoordinator.dismissSheet()
 
         if url != AppDeepLinkSchemes.openVPN.url

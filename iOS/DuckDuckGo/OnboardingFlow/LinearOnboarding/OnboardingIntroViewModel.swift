@@ -112,8 +112,8 @@ final class OnboardingIntroViewModel: ObservableObject {
     convenience init(pixelReporter: LinearOnboardingPixelReporting,
                      systemSettingsPiPTutorialManager: SystemSettingsPiPTutorialManaging,
                      daxDialogsManager: ContextualDaxDialogDisabling,
-                     restorePromptHandler: OnboardingRestorePromptHandling) {
-        let onboardingManager = OnboardingManager()
+                     restorePromptHandler: OnboardingRestorePromptHandling,
+                     onboardingManager: OnboardingManaging) {
         let defaultBrowserInfoStore = DefaultBrowserInfoStore()
         let defaultBrowserEventMapper = DefaultBrowserPromptManagerDebugPixelHandler()
         let onboardingSearchExperienceProvider = OnboardingSearchExperience()
