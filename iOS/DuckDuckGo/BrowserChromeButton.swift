@@ -246,7 +246,7 @@ extension BrowserChromeButton {
         let barItem = UIBarButtonItem(customView: button)
 
         if #available(iOS 26.0, *) {
-            barItem.hidesSharedBackground = true
+//            barItem.hidesSharedBackground = true
         }
 
         barItem.title = title

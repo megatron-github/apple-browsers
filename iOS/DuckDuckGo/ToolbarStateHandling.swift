@@ -117,8 +117,9 @@ final class ToolbarHandler: ToolbarStateHandling {
             }
         }()
 
+        // let group = UIBarButtonItemGroup(barButtonItems: buttons, representativeItem: nil)
         toolbar.setItems(buttons, animated: false)
-
+        // toolbar.setItems(group, animated: false)
     }
 
     // MARK: - Private Methods
@@ -138,13 +139,13 @@ final class ToolbarHandler: ToolbarStateHandling {
     private func createPageLoadedButtons() -> [UIBarButtonItem] {
         return [
             backButton,
-            .flexibleSpace(),
+            // .flexibleSpace(),
             forwardButton,
-            .flexibleSpace(),
+            // .flexibleSpace(),
             fireBarButtonItem,
-            .flexibleSpace(),
+            // .flexibleSpace(),
             tabSwitcherButton,
-            .flexibleSpace(),
+            // .flexibleSpace(),
             browserMenuButton,
         ].compactMap { $0 }
     }
@@ -152,13 +153,13 @@ final class ToolbarHandler: ToolbarStateHandling {
     private func createNewTabButtons() -> [UIBarButtonItem] {
         return [
             bookmarkButton,
-            .flexibleSpace(),
+            // .flexibleSpace(),
             passwordsButton,
-            .flexibleSpace(),
+            // .flexibleSpace(),
             fireBarButtonItem,
-            .flexibleSpace(),
+            // .flexibleSpace(),
             tabSwitcherButton,
-            .flexibleSpace(),
+            // .flexibleSpace(),
             browserMenuButton,
         ].compactMap { $0 }
     }

@@ -4992,10 +4992,10 @@ extension MainViewController {
 
         view.backgroundColor = theme.mainViewBackgroundColor
 
-        viewCoordinator.navigationBarContainer.backgroundColor = theme.barBackgroundColor
+        viewCoordinator.navigationBarContainer.backgroundColor = .clear // theme.barBackgroundColor
         viewCoordinator.navigationBarContainer.tintColor = theme.barTintColor
 
-        viewCoordinator.toolbar.barTintColor = theme.barBackgroundColor
+        viewCoordinator.toolbar.barTintColor = .clear // theme.barBackgroundColor
         viewCoordinator.toolbar.tintColor = UIColor(singleUseColor: .toolbarButton)
 
         viewCoordinator.toolbarTabSwitcherButton.tintColor = UIColor(singleUseColor: .toolbarButton)

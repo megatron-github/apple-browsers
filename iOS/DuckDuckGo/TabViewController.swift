@@ -736,9 +736,9 @@ class TabViewController: UIViewController {
             /// manages its own native bottom layout via the UnifiedToggleInput container.
 
             let targetHeight = chromeDelegate?.barsMaxHeight ?? 0.0
-            webViewBottomAnchorConstraint?.constant = -targetHeight * barsVisibilityPercent
+//            webViewBottomAnchorConstraint?.constant = -targetHeight * barsVisibilityPercent
         } else {
-            webViewBottomAnchorConstraint?.constant = 0
+//            webViewBottomAnchorConstraint?.constant = 0
         }
         borderView.bottomAlpha = AppWidthObserver.shared.isLargeWidth ? 0 : barsVisibilityPercent
     }
@@ -836,6 +836,10 @@ class TabViewController: UIViewController {
         } else {
             webView = WebView(frame: view.bounds, configuration: configuration)
         }
+        webView.scrollView.clipsToBounds = false
+        webView.clipsToBounds = false
+        outerContainer.clipsToBounds = false
+
         textZoomCoordinator.onWebViewCreated(applyToWebView: webView)
         specialErrorPageNavigationHandler.attachWebView(webView)
 
@@ -850,6 +854,7 @@ class TabViewController: UIViewController {
         webView.uiDelegate = self
 
         webViewContainer.addSubview(webView)
+        webViewContainer.clipsToBounds = false
         webView.translatesAutoresizingMaskIntoConstraints = false
         webViewBottomAnchorConstraint = webView.bottomAnchor.constraint(equalTo: webViewContainer.bottomAnchor)
         NSLayoutConstraint.activate([
@@ -919,8 +924,8 @@ class TabViewController: UIViewController {
         }
 #endif
 
-        borderView.insertSelf(into: webView)
-        borderView.updateForAddressBarPosition(appSettings.currentAddressBarPosition)
+//        borderView.insertSelf(into: webView)
+//        borderView.updateForAddressBarPosition(appSettings.currentAddressBarPosition)
     }
 
     private func addObservers() {
@@ -4199,16 +4204,18 @@ extension TabViewController {
                 
                 switch update {
                 case .showPill(let height):
-                    if self.appSettings.currentAddressBarPosition == .bottom {
-                        let targetHeight = self.chromeDelegate?.barsMaxHeight ?? 0
-                        self.webViewBottomAnchorConstraint?.constant = -targetHeight - height
-                    } else {
-                        self.webViewBottomAnchorConstraint?.constant = -height
-                    }
+//                    if self.appSettings.currentAddressBarPosition == .bottom {
+//                        let targetHeight = self.chromeDelegate?.barsMaxHeight ?? 0
+//                        self.webViewBottomAnchorConstraint?.constant = -targetHeight - height
+//                    } else {
+//                        self.webViewBottomAnchorConstraint?.constant = -height
+//                    }
+                    break
 
                 case .reset:
-                    let targetHeight = self.chromeDelegate?.barsMaxHeight ?? 0
-                    self.webViewBottomAnchorConstraint?.constant = self.appSettings.currentAddressBarPosition == .bottom ? -targetHeight : 0
+//                    let targetHeight = self.chromeDelegate?.barsMaxHeight ?? 0
+//                    self.webViewBottomAnchorConstraint?.constant = self.appSettings.currentAddressBarPosition == .bottom ? -targetHeight : 0
+                    break
                 }
                 
                 self.view.layoutIfNeeded()
