@@ -17,9 +17,7 @@
 //  limitations under the License.
 //
 
-
 import XCTest
-import DesignResourcesKit
 @testable import DuckDuckGo
 
 // MARK: - ToolbarHandlerTests
@@ -27,48 +25,45 @@ import DesignResourcesKit
 class ToolbarHandlerTests: XCTestCase {
 
     var toolbarHandler: ToolbarHandler!
-    var mockToolbar: UIToolbar!
+    var mockToolbar: BrowserToolbarView!
     var mockNavigatable: MockNavigatable!
-    var mockThemeManager: MockThemeManager!
 
     override func setUp() {
         super.setUp()
-        mockToolbar = UIToolbar()
+        mockToolbar = BrowserToolbarView()
         mockNavigatable = MockNavigatable(canGoBack: true, canGoForward: false)
-        mockThemeManager = MockThemeManager()
-        toolbarHandler = ToolbarHandler(toolbar: mockToolbar, themeManager: mockThemeManager)
+        toolbarHandler = ToolbarHandler(toolbar: mockToolbar)
     }
 
     override func tearDown() {
         toolbarHandler = nil
         mockToolbar = nil
         mockNavigatable = nil
-        mockThemeManager = nil
         super.tearDown()
     }
-    
+
     func testUpdateToolbarWithStateNewTab() {
-        // To prevent assertion for using experimental colors with the default theme
         toolbarHandler.updateToolbarWithState(.newTab)
 
-        XCTAssertEqual(mockToolbar.items?.count, 9)
-        XCTAssertEqual(mockToolbar.items?[0].title, UserText.actionOpenBookmarks)
-        XCTAssertEqual(mockToolbar.items?[2].title, UserText.actionOpenPasswords)
-        XCTAssertEqual(mockToolbar.items?[4].title, UserText.actionForgetAll)
-        XCTAssertEqual(mockToolbar.items?[6].title, UserText.tabSwitcherAccessibilityLabel)
-        XCTAssertEqual(mockToolbar.items?[8].title, UserText.menuButtonHint)
+        let views = mockToolbar.arrangedToolbarButtonViews
+        XCTAssertEqual(views.count, 5)
+        XCTAssertEqual((views[0] as? UIButton)?.accessibilityLabel, UserText.actionOpenBookmarks)
+        XCTAssertEqual((views[1] as? UIButton)?.accessibilityLabel, UserText.actionOpenPasswords)
+        XCTAssertEqual((views[2] as? UIButton)?.accessibilityLabel, UserText.actionForgetAll)
+        XCTAssertEqual((views[3] as? UIButton)?.accessibilityLabel, UserText.tabSwitcherAccessibilityLabel)
+        XCTAssertEqual((views[4] as? UIButton)?.accessibilityLabel, UserText.menuButtonHint)
     }
 
     func testUpdateToolbarWithStatePageLoaded() {
-        // To prevent assertion for using experimental colors with the default theme
         toolbarHandler.updateToolbarWithState(.pageLoaded(currentTab: mockNavigatable))
 
-        XCTAssertEqual(mockToolbar.items?.count, 9)
-        XCTAssertEqual(mockToolbar.items?[0].title, UserText.keyCommandBrowserBack)
-        XCTAssertEqual(mockToolbar.items?[2].title, UserText.keyCommandBrowserForward)
-        XCTAssertEqual(mockToolbar.items?[4].title, UserText.actionForgetAll)
-        XCTAssertEqual(mockToolbar.items?[6].title, UserText.tabSwitcherAccessibilityLabel)
-        XCTAssertEqual(mockToolbar.items?[8].title, UserText.menuButtonHint)
+        let views = mockToolbar.arrangedToolbarButtonViews
+        XCTAssertEqual(views.count, 5)
+        XCTAssertEqual((views[0] as? UIButton)?.accessibilityLabel, UserText.keyCommandBrowserBack)
+        XCTAssertEqual((views[1] as? UIButton)?.accessibilityLabel, UserText.keyCommandBrowserForward)
+        XCTAssertEqual((views[2] as? UIButton)?.accessibilityLabel, UserText.actionForgetAll)
+        XCTAssertEqual((views[3] as? UIButton)?.accessibilityLabel, UserText.tabSwitcherAccessibilityLabel)
+        XCTAssertEqual((views[4] as? UIButton)?.accessibilityLabel, UserText.menuButtonHint)
 
         XCTAssertTrue(toolbarHandler.backButton.isEnabled)
         XCTAssertFalse(toolbarHandler.forwardButton.isEnabled)
@@ -76,11 +71,11 @@ class ToolbarHandlerTests: XCTestCase {
 
     func testUpdateToolbarWithStateNoChange() {
         toolbarHandler.updateToolbarWithState(.newTab)
-        let initialItems = mockToolbar.items
+        let initialViews = mockToolbar.arrangedToolbarButtonViews
 
         toolbarHandler.updateToolbarWithState(.newTab)
 
-        XCTAssertEqual(mockToolbar.items, initialItems)
+        XCTAssertEqual(mockToolbar.arrangedToolbarButtonViews.map(ObjectIdentifier.init), initialViews.map(ObjectIdentifier.init))
     }
 
     func testBackButtonEnabledState() {

@@ -41,15 +41,15 @@ class MainViewCoordinator {
     var aiChatTabChatHeaderContainer: UIView!
     var unifiedToggleInputContainer: UIView!
     var unifiedInputContentContainer: UIView!
-    var toolbar: UIToolbar!
+    var toolbar: BrowserToolbarView!
     var toolbarSpacer: UIView!
-    var toolbarBackButton: UIBarButtonItem { toolbarHandler.backButton }
-    var toolbarFireBarButtonItem: UIBarButtonItem { toolbarHandler.fireBarButtonItem }
-    var toolbarForwardButton: UIBarButtonItem { toolbarHandler.forwardButton }
-    var toolbarTabSwitcherButton: UIBarButtonItem { toolbarHandler.tabSwitcherButton }
-    var menuToolbarButton: UIBarButtonItem { toolbarHandler.browserMenuButton }
-    var toolbarPasswordsButton: UIBarButtonItem { toolbarHandler.passwordsButton }
-    var toolbarBookmarksButton: UIBarButtonItem { toolbarHandler.bookmarkButton }
+    var toolbarBackButton: BrowserChromeButton { toolbarHandler.backButton }
+    var toolbarFireButton: BrowserChromeButton { toolbarHandler.fireButton }
+    var toolbarForwardButton: BrowserChromeButton { toolbarHandler.forwardButton }
+    var toolbarTabSwitcherView: UIView { toolbarHandler.tabSwitcherView }
+    var menuToolbarButton: BrowserChromeButton { toolbarHandler.browserMenuButton }
+    var toolbarPasswordsButton: BrowserChromeButton { toolbarHandler.passwordsButton }
+    var toolbarBookmarksButton: BrowserChromeButton { toolbarHandler.bookmarkButton }
 
     let constraints = Constraints()
     var toolbarHandler: ToolbarStateHandling!
@@ -75,7 +75,7 @@ class MainViewCoordinator {
     }
 
     func hideToolbarSeparator() {
-        toolbar.setShadowImage(UIImage(), forToolbarPosition: .any)
+        // `UIToolbar` separator/shadow removed with custom `BrowserToolbarView`.
     }
 
     class Constraints {

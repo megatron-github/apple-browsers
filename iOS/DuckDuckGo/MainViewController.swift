@@ -951,16 +951,15 @@ class MainViewController: UIViewController {
 
     private func setUpToolbarButtonsActions() {
 
-        viewCoordinator.toolbarBackButton.setCustomItemAction(on: self, action: #selector(onBackPressed))
-        viewCoordinator.toolbarForwardButton.setCustomItemAction(on: self, action: #selector(onForwardPressed))
-        viewCoordinator.toolbarPasswordsButton.setCustomItemAction(on: self, action: #selector(onPasswordsPressed))
-        viewCoordinator.toolbarBookmarksButton.setCustomItemAction(on: self, action: #selector(onToolbarBookmarksPressed))
-        viewCoordinator.menuToolbarButton.setCustomItemAction(on: self, action: #selector(onMenuPressed))
+        viewCoordinator.toolbarBackButton.addTarget(self, action: #selector(onBackPressed), for: .touchUpInside)
+        viewCoordinator.toolbarForwardButton.addTarget(self, action: #selector(onForwardPressed), for: .touchUpInside)
+        viewCoordinator.toolbarPasswordsButton.addTarget(self, action: #selector(onPasswordsPressed), for: .touchUpInside)
+        viewCoordinator.toolbarBookmarksButton.addTarget(self, action: #selector(onToolbarBookmarksPressed), for: .touchUpInside)
+        viewCoordinator.menuToolbarButton.addTarget(self, action: #selector(onMenuPressed), for: .touchUpInside)
 
-        viewCoordinator.toolbarFireBarButtonItem.setCustomItemAction(on: self, action: #selector(performCustomizationActionForToolbar))
+        viewCoordinator.toolbarFireButton.addTarget(self, action: #selector(performCustomizationActionForToolbar), for: .touchUpInside)
 
-        viewCoordinator.menuToolbarButton.customView?
-            .addGestureRecognizer(UILongPressGestureRecognizer(target: self, action: #selector(onMenuLongPressed)))
+        viewCoordinator.menuToolbarButton.addGestureRecognizer(UILongPressGestureRecognizer(target: self, action: #selector(onMenuLongPressed)))
     }
 
     private func registerForPageRefreshPatterns() {
@@ -1233,12 +1232,12 @@ class MainViewController: UIViewController {
         tabSwitcherButton = TabSwitcherStaticButton()
 
         tabSwitcherButton?.delegate = self
-        viewCoordinator.toolbarTabSwitcherButton.customView = tabSwitcherButton
+        viewCoordinator.toolbarHandler.setTabSwitcherView(tabSwitcherButton!)
 
         assert(tabSwitcherButton != nil)
 
-        viewCoordinator.toolbarTabSwitcherButton.isAccessibilityElement = true
-        viewCoordinator.toolbarTabSwitcherButton.accessibilityTraits = .button
+        viewCoordinator.toolbarTabSwitcherView.isAccessibilityElement = true
+        viewCoordinator.toolbarTabSwitcherView.accessibilityTraits = .button
 
         // Omnibar tab switcher button (for iPhone landscape combined bar)
         let omniBarTabSwitcher = TabSwitcherStaticButton()
@@ -1896,7 +1895,7 @@ class MainViewController: UIViewController {
     }
 
     private func refreshTabIcon() {
-        viewCoordinator.toolbarTabSwitcherButton.accessibilityHint = UserText.numberOfTabs(tabManager.currentTabsModel.count)
+        viewCoordinator.toolbarTabSwitcherView.accessibilityHint = UserText.numberOfTabs(tabManager.currentTabsModel.count)
         assert(tabSwitcherButton != nil)
         let count = tabManager.currentTabsModel.count
         let hasUnread = tabManager.currentTabsModel.hasUnread
@@ -3675,10 +3674,7 @@ extension MainViewController: OmniBarDelegate {
     }
 
     private func shareCurrentURLFromToolbar() {
-        guard let targetView = viewCoordinator.toolbarFireBarButtonItem.customView else {
-            assertionFailure("Expected custom view on toolbar fire button")
-            return
-        }
+        let targetView = viewCoordinator.toolbarFireButton
         // Pixels coming later.
         guard let link = currentTab?.link else { return }
         currentTab?.onShareAction(forLink: link, fromView: targetView)
@@ -4732,11 +4728,11 @@ extension MainViewController {
         let state = mobileCustomization.state
 
         if state.currentToolbarButton == .fire {
-            return viewCoordinator.toolbarFireBarButtonItem.customView
+            return viewCoordinator.toolbarFireButton
         } else if state.currentAddressBarButton == .fire {
             return viewCoordinator.omniBar.barView.customizableButton
         } else {
-            return viewCoordinator.menuToolbarButton.customView
+            return viewCoordinator.menuToolbarButton
         }
 
     }
@@ -4995,10 +4991,9 @@ extension MainViewController {
         viewCoordinator.navigationBarContainer.backgroundColor = .clear // theme.barBackgroundColor
         viewCoordinator.navigationBarContainer.tintColor = theme.barTintColor
 
-        viewCoordinator.toolbar.barTintColor = .clear // theme.barBackgroundColor
         viewCoordinator.toolbar.tintColor = UIColor(singleUseColor: .toolbarButton)
 
-        viewCoordinator.toolbarTabSwitcherButton.tintColor = UIColor(singleUseColor: .toolbarButton)
+        viewCoordinator.toolbarTabSwitcherView.tintColor = UIColor(singleUseColor: .toolbarButton)
 
         viewCoordinator.logoText.tintColor = theme.ddgTextTintColor
     }
@@ -5104,11 +5099,11 @@ extension MainViewController {
         
         let backMenu = historyMenu(with: currentTab.webView.backForwardList.backList.reversed())
         viewCoordinator.omniBar.barView.backButton.menu = backMenu
-        viewCoordinator.toolbarBackButton.setCustomItemMenu(backMenu)
+        viewCoordinator.toolbarBackButton.menu = backMenu
 
         let forwardMenu = historyMenu(with: currentTab.webView.backForwardList.forwardList)
         viewCoordinator.omniBar.barView.forwardButton.menu = forwardMenu
-        viewCoordinator.toolbarForwardButton.setCustomItemMenu(forwardMenu)
+        viewCoordinator.toolbarForwardButton.menu = forwardMenu
     }
 
     private func historyMenu(with backForwardList: [WKBackForwardListItem]) -> UIMenu {
@@ -5198,24 +5193,6 @@ extension MainViewController: AIChatContentHandlingDelegate {
 
     func aiChatContentHandlerDidReceivePromptSubmission(_ handler: AIChatContentHandling) {
         // No action needed for full mode - notification handles metrics
-    }
-}
-
-private extension UIBarButtonItem {
-    func setCustomItemAction(on target: Any?, action: Selector) {
-        if let customControl = customView as? UIControl {
-            customControl.addTarget(target, action: action, for: .touchUpInside)
-        } else {
-            self.action = action
-        }
-    }
-
-    func setCustomItemMenu(_ menu: UIMenu) {
-        if let customControl = customView as? UIButton {
-            customControl.menu = menu
-        } else {
-            self.menu = menu
-        }
     }
 }
 
@@ -5435,10 +5412,7 @@ extension MainViewController {
 
     /// Applies customization if enabled, ensures default otherwise.
     private func applyCustomizationForToolbar(_ state: MobileCustomization.State) {
-        guard let browserChrome = viewCoordinator.toolbarFireBarButtonItem.customView as? BrowserChromeButton else {
-            assertionFailure("Expected BrowserChromeButton")
-            return
-        }
+        let browserChrome = viewCoordinator.toolbarFireButton
 
         if !isNewTabPageVisible && state.isEnabled {
             browserChrome.setImage(state.currentToolbarButton.largeIcon)

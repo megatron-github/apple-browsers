@@ -337,7 +337,7 @@ class TabSwitcherViewController: UIViewController {
         view.addSubview(titleBarView)
         view.addSubview(toolbar)
         view.addSubview(collectionView)
-        view.addSubview(borderView)
+        // view.addSubview(borderView)
 
         let toolbarAppearance = UIToolbarAppearance()
         toolbarAppearance.configureWithTransparentBackground()

@@ -284,8 +284,7 @@ extension MainViewFactory {
     }
 
     private func createToolbar() {
-        coordinator.toolbar = HitTestingToolbar()
-        coordinator.toolbar.isTranslucent = true
+        coordinator.toolbar = BrowserToolbarView()
         coordinator.toolbar.backgroundColor = .clear
         superview.addSubview(coordinator.toolbar)
         coordinator.toolbarHandler = ToolbarHandler(toolbar: coordinator.toolbar)

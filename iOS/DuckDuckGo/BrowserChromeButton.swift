@@ -99,6 +99,15 @@ class BrowserChromeButton: UIButton {
         setNeedsDisplay()
     }
 
+    override var intrinsicContentSize: CGSize {
+        switch type {
+        case .toolbar:
+            return CGSize(width: 34, height: 44)
+        default:
+            return super.intrinsicContentSize
+        }
+    }
+
     override func layoutSubviews() {
         super.layoutSubviews()
         border?.center = center
@@ -229,19 +238,30 @@ private extension UIButton.Configuration {
 
 extension BrowserChromeButton {
 
-    static func createToolbarButtonItem(title: String, image: UIImage?, action: (() -> Void)? = nil) -> UIBarButtonItem {
+    /// Toolbar control for custom `BrowserToolbarView` layouts (preferred over bar items for the main browser toolbar).
+    static func createToolbarButton(title: String, image: UIImage?, action: (() -> Void)? = nil) -> BrowserChromeButton {
         let button = BrowserChromeButton(.toolbar)
         if let image = image {
             button.setImage(image)
         }
 
         if let action = action {
-            button.addAction(UIAction{ _ in
+            button.addAction(UIAction { _ in
                 action()
             }, for: .touchUpInside)
         }
 
-        button.frame = CGRect(x: 0, y: 0, width: 34, height: 44)
+        button.accessibilityLabel = title
+        return button
+    }
+
+    static func createToolbarButtonItem(title: String, image: UIImage?, action: (() -> Void)? = nil) -> UIBarButtonItem {
+        let button = createToolbarButton(title: title, image: image, action: action)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            button.widthAnchor.constraint(equalToConstant: 34),
+            button.heightAnchor.constraint(equalToConstant: 44),
+        ])
 
         let barItem = UIBarButtonItem(customView: button)
 
