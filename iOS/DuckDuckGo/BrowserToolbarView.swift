@@ -63,7 +63,8 @@ final class BrowserToolbarView: UIView {
 
         if #available(iOS 26, *) {
             materialBackgroundView.cornerConfiguration =
-                .corners(radius: UICornerRadius.containerConcentric(minimum: Self.cornerRadius))
+                // .corners(radius: UICornerRadius.containerConcentric(minimum: Self.cornerRadius))
+                .capsule()
         } else {
             materialBackgroundView.contentView.layer.cornerRadius = Self.cornerRadius
             materialBackgroundView.contentView.layer.cornerCurve = .continuous
@@ -82,8 +83,7 @@ final class BrowserToolbarView: UIView {
             materialBackgroundView.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -Self.barOuterInsets.bottom),
             buttonStack.leadingAnchor.constraint(equalTo: materialBackgroundView.contentView.leadingAnchor),
             buttonStack.trailingAnchor.constraint(equalTo: materialBackgroundView.contentView.trailingAnchor),
-            buttonStack.topAnchor.constraint(equalTo: materialBackgroundView.contentView.topAnchor),
-            buttonStack.bottomAnchor.constraint(equalTo: materialBackgroundView.contentView.bottomAnchor),
+            buttonStack.centerYAnchor.constraint(equalTo: materialBackgroundView.contentView.centerYAnchor),
         ])
     }
 

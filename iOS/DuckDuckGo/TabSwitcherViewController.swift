@@ -305,13 +305,13 @@ class TabSwitcherViewController: UIViewController {
             interfaceMode.isLarge ? collectionView.bottomAnchor.constraint(equalTo: view.bottomAnchor) :
                 collectionView.bottomAnchor.constraint(equalTo: isBottomBar ? titleBarView.topAnchor : toolbar.topAnchor),
 
-            borderView.topAnchor.constraint(equalTo: isBottomBar ? view.safeAreaLayoutGuide.topAnchor : titleBarView.bottomAnchor),
-            borderView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            borderView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+//            borderView.topAnchor.constraint(equalTo: isBottomBar ? view.safeAreaLayoutGuide.topAnchor : titleBarView.bottomAnchor),
+//            borderView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+//            borderView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
 
             // On iPad large mode constrain to the bottom as the toolbar is hidden
-            interfaceMode.isLarge ? borderView.bottomAnchor.constraint(equalTo: view.bottomAnchor) :
-                borderView.bottomAnchor.constraint(equalTo: isBottomBar ? titleBarView.topAnchor : toolbar.topAnchor),
+//            interfaceMode.isLarge ? borderView.bottomAnchor.constraint(equalTo: view.bottomAnchor) :
+//                borderView.bottomAnchor.constraint(equalTo: isBottomBar ? titleBarView.topAnchor : toolbar.topAnchor),
 
             // Always at the bottom
             toolbar.constrainView(view, by: .width, constant: toolbarWidthMod),

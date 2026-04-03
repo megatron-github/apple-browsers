@@ -447,7 +447,7 @@ extension MainViewFactory {
         NSLayoutConstraint.activate([
             toolbar.constrainView(superview, by: .width, constant: toolbarWidthMod),
             toolbar.constrainView(superview, by: .centerX),
-            toolbar.constrainAttribute(.height, to: 49),
+            toolbar.constrainAttribute(.height, to: 56),
             coordinator.constraints.toolbarBottom,
         ])
     }
